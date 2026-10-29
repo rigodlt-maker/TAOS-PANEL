@@ -1,8 +1,8 @@
 "use client";
 
 // Barra inferior y botón flotante, con el mismo estilo TAOS que Finanzas y Segundo Cerebro
-import { CalendarDays, CalendarPlus, Ellipsis, ListChecks, Mail, Sun } from "lucide-react";
-import Link from "next/link";
+import { CalendarDays, CalendarPlus, LayoutGrid, ListChecks, Mail, Sun, type LucideIcon } from "lucide-react";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 const SECCIONES = [
@@ -10,8 +10,19 @@ const SECCIONES = [
   { ruta: "/agenda", nombre: "Agenda", icono: CalendarDays },
   { ruta: "/correo", nombre: "Correo", icono: Mail },
   { ruta: "/tareas", nombre: "Tareas", icono: ListChecks },
-  { ruta: "/mas", nombre: "Más", icono: Ellipsis },
+  { ruta: "/mas", nombre: "Menú", icono: LayoutGrid },
 ];
+
+// Dentro del enlace: se ilumina en cuanto lo tocas, aunque la pantalla tarde en abrir
+function Contenido({ icono: Icono, nombre, activa }: { icono: LucideIcon; nombre: string; activa: boolean }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span className={pending ? "abriendo contenido" : "contenido"}>
+      <Icono size={24} strokeWidth={activa || pending ? 2.2 : 1.8} />
+      {nombre}
+    </span>
+  );
+}
 
 export function Navegacion() {
   const actual = usePathname();
@@ -31,8 +42,7 @@ export function Navegacion() {
           {SECCIONES.map((s) => (
             <li key={s.ruta}>
               <Link href={s.ruta} aria-current={activa(s.ruta) ? "page" : undefined}>
-                <s.icono size={24} strokeWidth={activa(s.ruta) ? 2.2 : 1.8} />
-                {s.nombre}
+                <Contenido icono={s.icono} nombre={s.nombre} activa={activa(s.ruta)} />
               </Link>
             </li>
           ))}
