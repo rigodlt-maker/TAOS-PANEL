@@ -9,6 +9,8 @@ export async function huellaDeClave(clave: string): Promise<string> {
 
 export async function sesionValida(valorCookie?: string): Promise<boolean> {
   const clave = process.env.PANEL_PASSWORD;
+  // Sin contraseña configurada = modo demostración (datos ficticios), abierto
+  if (!clave) return true;
   if (!clave || !valorCookie) return false;
   return valorCookie === (await huellaDeClave(clave));
 }

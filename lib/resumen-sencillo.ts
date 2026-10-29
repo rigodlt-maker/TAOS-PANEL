@@ -29,7 +29,7 @@ export function resumenSencillo(momento: Momento, datos: DatosPanel): ResumenIA 
   ].slice(0, 3);
 
   const partes = [
-    reuniones ? `${reuniones} reunión${reuniones > 1 ? "es" : ""}` : dia.eventos.length ? `${dia.eventos.length} evento${dia.eventos.length > 1 ? "s" : ""}` : "agenda libre",
+    reuniones ? `${reuniones} ${reuniones > 1 ? "reuniones" : "reunión"}` : dia.eventos.length ? `${dia.eventos.length} evento${dia.eventos.length > 1 ? "s" : ""}` : "agenda libre",
     `${duracion(dia.minutosLibres)} libres`,
   ];
   const clave = prioridades[0] ? `; lo más importante: ${prioridades[0].titulo}` : "";

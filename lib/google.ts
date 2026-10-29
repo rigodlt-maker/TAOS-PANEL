@@ -1,3 +1,4 @@
+import { correosDemo, esDemo, eventosDemo, tareasDemo, TOKEN_DEMO } from "./demo";
 import { ZONA } from "./config";
 import { rangoDelDia } from "./fechas";
 import { decodificarEntidades } from "./texto";
@@ -10,6 +11,7 @@ function variable(nombre: string): string {
 
 // Cambia el Refresh token por un token de acceso temporal (dura ~1 hora)
 export async function tokenDeAcceso(): Promise<string> {
+  if (esDemo()) return TOKEN_DEMO;
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -65,6 +67,7 @@ type EventoGoogle = {
 
 // Eventos desde el inicio de "desde" hasta el final de "hasta" (fechas AAAA-MM-DD)
 export async function eventosEntre(token: string, desde: string, hasta: string): Promise<Evento[]> {
+  if (token === TOKEN_DEMO) return eventosDemo(desde);
   const params = new URLSearchParams({
     timeMin: rangoDelDia(desde).inicio,
     timeMax: rangoDelDia(hasta).fin,
@@ -132,6 +135,7 @@ export async function correosNoLeidos(
   token: string,
   maximo = 10,
 ): Promise<{ total: number; correos: Correo[]; categorias: Categoria[] }> {
+  if (token === TOKEN_DEMO) return correosDemo();
   const params = new URLSearchParams({ q: "is:unread in:inbox -category:promotions -category:social -category:updates -category:forums", maxResults: String(maximo) });
   const [lista, categorias] = await Promise.all([
     googleGet<{ messages?: { id: string }[]; resultSizeEstimate?: number }>(
@@ -168,6 +172,7 @@ function base64(texto: string): string {
 }
 
 export async function enviarCorreo(token: string, para: string, asunto: string, html: string): Promise<void> {
+  if (token === TOKEN_DEMO) return;
   const mensaje = [
     `To: ${para}`,
     `Subject: =?UTF-8?B?${base64(asunto)}?=`,
@@ -190,6 +195,7 @@ export async function enviarCorreo(token: string, para: string, asunto: string, 
 export type Tarea = { titulo: string; vence?: string; notas?: string };
 
 export async function tareasPendientes(token: string): Promise<Tarea[]> {
+  if (token === TOKEN_DEMO) return tareasDemo(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date()));
   const datos = await googleGet<{ items?: { title?: string; due?: string; notes?: string }[] }>(
     token,
     "https://tasks.googleapis.com/tasks/v1/lists/@default/tasks?showCompleted=false&maxResults=100",

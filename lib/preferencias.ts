@@ -24,6 +24,9 @@ export function limpiar(d: unknown): Preferencias {
 }
 
 export const preferencias = cache(async (): Promise<Preferencias> => {
+  // Modo demostración: datos ficticios
+  if (!process.env.PANEL_PASSWORD)
+    return { nombre: "Alex", ciudad: CIUDAD_BASE, configurado: true, lugares: [{ nombre: "Casa", icono: "🏡", direccion: "Zócalo, Ciudad de México" }, { nombre: "Oficina", icono: "💼", direccion: "Paseo de la Reforma 222, Ciudad de México" }, { nombre: "Gimnasio", icono: "🏋️", direccion: "Parque México, Condesa, Ciudad de México" }] };
   if (!pushConfigurado()) return BASE;
   try {
     const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
