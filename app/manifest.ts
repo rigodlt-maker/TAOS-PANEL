@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // Permite instalar el panel como app en el celular
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Panel de Vida",
-    short_name: "Panel de Vida",
+    name: "Optimizador de Vida",
+    short_name: "Optimizador",
     description: "Mi calendario, correo, tareas y más en una sola página",
     start_url: "/",
     display: "standalone",

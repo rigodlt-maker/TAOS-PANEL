@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/integridad.cjs && next build",
     "start": "next start",
     "test": "tsx --test tests/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sellar": "node scripts/integridad.cjs sellar"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.1.0",

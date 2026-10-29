@@ -1,10 +1,10 @@
-# Panel de Vida · TAOS
+# Optimizador de Vida · TAOS
 
 Tu día en una pantalla: agenda, correo, tareas, clima, noticias y lugares frecuentes, con resumen en la mañana y en la noche.
 
 ## Instalar
 
-[![Instalar en Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frigodlt-maker%2Ftaos-panel&project-name=panel-de-vida&repository-name=panel-de-vida&env=NEXT_PUBLIC_SUPABASE_URL,SUPABASE_SECRET_KEY,ALLOWED_EMAIL,PANEL_PASSWORD,CRON_SECRET&envDescription=Datos%20de%20tu%20proyecto%20de%20Supabase%2C%20tu%20correo%20y%20un%20texto%20al%20azar%20para%20los%20avisos)
+[![Instalar en Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frigodlt-maker%2Ftaos-panel&project-name=optimizador-de-vida&repository-name=optimizador-de-vida&env=NEXT_PUBLIC_SUPABASE_URL,SUPABASE_SECRET_KEY,ALLOWED_EMAIL,PANEL_PASSWORD,CRON_SECRET&envDescription=Datos%20de%20tu%20proyecto%20de%20Supabase%2C%20tu%20correo%20y%20un%20texto%20al%20azar%20para%20los%20avisos)
 
 1. Toca el botón y entra con GitHub.
 2. Pega las variables (abajo) y toca **Deploy**.
@@ -32,3 +32,10 @@ npm test
 ```
 
 Parte de **TAOS**, un sistema de 4 apps personales para organizar tu vida. Herramienta de organización personal: no es asesoría médica, financiera ni legal.
+
+## Soporte y modificaciones
+
+- El soporte de TAOS cubre **la versión original** de esta app, instalada siguiendo la guía.
+- Si cambias el código (tú, otra persona o una IA), la app lo detecta al publicarse y muestra el aviso **“versión modificada”**. Puede dejar de funcionar como se diseñó y ya no tiene soporte.
+- Para instalar o arreglar un error de configuración **no necesitas cambiar código**: casi siempre es una variable en Vercel o el SQL de Supabase.
+- Tus datos viven en tus propias cuentas (Supabase, Vercel y Google). Nadie más puede verlos.

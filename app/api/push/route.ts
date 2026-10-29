@@ -15,7 +15,7 @@ type Cuerpo = {
 export async function GET() {
   const llaves = pushConfigurado() ? llavesVapid() : null;
   return Response.json(
-    llaves ? { ok: true, llave: llaves.publica } : { ok: false, mensaje: `Panel de Vida no encuentra en Vercel: ${variablesFaltantes().join(", ")}. Revisa que el nombre esté escrito igual y que esté marcada para Production.` },
+    llaves ? { ok: true, llave: llaves.publica } : { ok: false, mensaje: `Optimizador de Vida no encuentra en Vercel: ${variablesFaltantes().join(", ")}. Revisa que el nombre esté escrito igual y que esté marcada para Production.` },
   );
 }
 

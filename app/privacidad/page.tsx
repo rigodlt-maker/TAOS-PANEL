@@ -1,4 +1,4 @@
-export const metadata = { title: "Privacidad · Panel de Vida" };
+export const metadata = { title: "Privacidad · Optimizador de Vida" };
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,7 @@ export default function Privacidad() {
       <section className="tarjeta">
         <h1>Política de privacidad</h1>
         <p>
-          Panel de Vida es una aplicación personal de uso privado. Solo su dueño puede entrar, y únicamente con
+          Optimizador de Vida es una aplicación personal de uso privado. Solo su dueño puede entrar, y únicamente con
           contraseña.
         </p>
         <p>

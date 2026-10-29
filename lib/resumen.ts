@@ -111,7 +111,7 @@ export function construirResumen(momento: Momento, datos: DatosPanel, ia: Seccio
   );
 
   const pie = urlPanel
-    ? `<p style="text-align:center;font-size:13px"><a style="${estilo.enlace}" href="${urlPanel}">Abrir mi Panel de Vida →</a></p>`
+    ? `<p style="text-align:center;font-size:13px"><a style="${estilo.enlace}" href="${urlPanel}">Abrir mi Optimizador de Vida →</a></p>`
     : "";
 
   const html = `<!doctype html><html><body style="${estilo.cuerpo}">

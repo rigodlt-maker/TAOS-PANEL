@@ -13,7 +13,7 @@ self.addEventListener("push", (evento) => {
     aviso = { cuerpo: evento.data ? evento.data.text() : "" };
   }
   evento.waitUntil(
-    self.registration.showNotification(aviso.titulo || "Panel de Vida", {
+    self.registration.showNotification(aviso.titulo || "Optimizador de Vida", {
       body: aviso.cuerpo || "",
       icon: "/icono-192.png",
       badge: "/icono-192.png",

@@ -97,7 +97,7 @@ export function AvisosPush() {
   if (estado === "bloqueado")
     return (
       <p className="tenue" style={{ fontSize: 14 }}>
-        Bloqueaste las notificaciones para esta app. Actívalas en los ajustes del celular (Notificaciones → Panel de Vida) o en el candado junto a la dirección, y
+        Bloqueaste las notificaciones para esta app. Actívalas en los ajustes del celular (Notificaciones → Optimizador) o en el candado junto a la dirección, y
         recarga la página.
       </p>
     );
