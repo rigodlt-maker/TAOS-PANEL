@@ -1,0 +1,244 @@
+/* Estilo TAOS: negro, grises y dorado. El mismo en las tres apps (Finanzas, Segundo Cerebro y Panel de Vida). */
+:root {
+  color-scheme: dark;
+  --fondo: #0a0a0a;
+  --tarjeta: #151515;
+  --suave: #1f1f1f;
+  --texto: #f5f5f5;
+  --tenue: #a3a3a3;
+  --acento: #d4af37;
+  --sobre-acento: #0a0a0a;
+  --borde: #2a2a2a;
+  --error: #f87171;
+  --barra: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45;
+  overflow-x: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+a { color: var(--acento); text-decoration: none; }
+a, button, summary { touch-action: manipulation; }
+
+/* ---------- Estructura: columna única, barra abajo ---------- */
+.app {
+  max-width: 672px;
+  margin: 0 auto;
+  padding: 0 16px calc(10rem + env(safe-area-inset-bottom));
+}
+
+.encabezado {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -16px 16px;
+  padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+  background: rgb(10 10 10 / 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.marca { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--texto); font-size: 18px; font-weight: 600; }
+.marca img { border-radius: 8px; flex-shrink: 0; }
+.clima-mini { display: flex; align-items: center; gap: 4px; color: var(--tenue); font-size: 14px; }
+.clima-mini strong { color: var(--texto); font-size: 18px; }
+
+.titulo { margin: 0 0 16px; }
+.titulo h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+.titulo h1::first-letter { text-transform: uppercase; }
+.titulo p { margin: 4px 0 0; color: var(--tenue); font-size: 14px; }
+.titulo p::first-letter { text-transform: uppercase; }
+
+.pila { display: grid; gap: 16px; }
+.pila > * { min-width: 0; }
+
+/* Barra de navegación inferior (máx. 5 secciones) */
+.barra {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  border-top: 1px solid var(--borde);
+  background: rgb(10 10 10 / 0.95);
+  backdrop-filter: blur(8px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.barra ul { max-width: 672px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.barra li { border: none; padding: 0; }
+.barra a {
+  position: relative;
+  min-height: var(--barra);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--tenue);
+}
+.barra a[aria-current="page"] { color: var(--acento); font-weight: 600; }
+.barra a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 32px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--acento);
+}
+
+/* Botón flotante para la acción principal */
+.fab-zona {
+  pointer-events: none;
+  position: fixed;
+  inset: auto 0 calc(5rem + env(safe-area-inset-bottom)) 0;
+  z-index: 30;
+}
+.fab-zona > div { max-width: 672px; margin: 0 auto; padding: 0 16px; display: flex; justify-content: flex-end; }
+.fab {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 24px 0 20px;
+  border-radius: 999px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgb(212 175 55 / 0.35);
+}
+.fab:active { transform: scale(0.95); }
+
+/* ---------- Tarjetas y listas ---------- */
+.tarjeta {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 0;
+}
+.tarjeta header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tarjeta h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.tarjeta header a { min-height: 44px; display: flex; align-items: center; font-size: 14px; }
+.tarjeta h3 { font-size: 14px; color: var(--tenue); font-weight: 500; margin: 16px 0 8px; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+li { padding: 12px 0; border-top: 1px solid var(--borde); font-size: 15px; min-width: 0; }
+li:first-child { border-top: none; padding-top: 4px; }
+
+.fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; color: var(--texto); }
+.fila > span:first-child { min-width: 0; }
+
+.tenue { color: var(--tenue); }
+.error { color: var(--error); font-size: 14px; }
+.vencida { color: var(--error); }
+.recorte { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+
+.aviso { background: var(--tarjeta); border: 1px solid var(--acento); border-radius: 12px; padding: 12px 16px; }
+
+/* Botones grandes, al alcance del pulgar */
+.botones { display: grid; gap: 10px; }
+.boton, button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+  border: none;
+  border-radius: 12px;
+  padding: 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.boton:active, button:active { transform: scale(0.98); }
+.boton.secundario { background: transparent; color: var(--acento); border: 1px solid var(--acento); }
+.boton.chico { min-height: 44px; padding: 0 16px; font-size: 14px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  font-size: 13px;
+  color: var(--tenue);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  padding: 0 12px;
+}
+.chip strong { color: var(--texto); }
+.chip.activo { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); font-weight: 600; }
+.chip.alerta { color: var(--error); border-color: var(--error); }
+.categorias { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+
+/* ---------- Hoy ---------- */
+.una-linea { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0; }
+.prioridades { margin: 0; padding-left: 22px; }
+.prioridades li { border-top: none; padding: 0 0 10px; }
+.sugerencia { margin: 16px 0 0; padding: 12px; border-radius: 12px; background: var(--suave); font-size: 14px; }
+.nota { font-size: 12px; margin: 12px 0 0; }
+
+/* ---------- Agenda ---------- */
+.dias { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.dias .chip { text-transform: capitalize; }
+
+.linea-tiempo { list-style: none; margin: 0; padding: 0; }
+.linea-tiempo li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; border-top: none; padding: 10px 0 10px 12px; border-left: 2px solid var(--borde); }
+.linea-tiempo .hora { font-size: 13px; color: var(--tenue); }
+.linea-tiempo .evento { border-left-color: var(--acento); }
+.linea-tiempo .evento a { color: var(--texto); font-weight: 500; }
+.linea-tiempo .choque { border-left-color: var(--error); }
+.linea-tiempo .libre { color: var(--tenue); font-size: 13px; border-left-style: dashed; }
+.detalle { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; }
+.detalle .chip { min-height: 32px; }
+
+/* ---------- Lugares ---------- */
+.lugar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 14px; }
+.acciones a:not(.boton) { min-height: 44px; display: flex; align-items: center; padding: 0 4px; }
+
+/* ---------- Login ---------- */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login form { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+.login h1 { margin: 0 0 8px; font-size: 22px; text-align: center; }
+.logo-login { align-self: center; border-radius: 16px; }
+.login input {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--borde);
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: 16px;
+}
+
+/* Formularios (Ajustes) */
+.campos { display: grid; gap: 12px; }
+.campos label { display: grid; gap: 6px; font-size: 14px; color: var(--tenue); }
+.campos input {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--borde);
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: 16px;
+  width: 100%;
+}
+.fila-lugar { display: grid; grid-template-columns: 56px 1fr; gap: 8px; }
+.fila-lugar input:last-child { grid-column: 1 / -1; }
