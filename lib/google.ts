@@ -1,5 +1,6 @@
 import { correosDemo, esDemo, eventosDemo, tareasDemo, TOKEN_DEMO } from "./demo";
 import { ZONA } from "./config";
+import { googleConfigurado, refreshGuardado } from "./google-cuenta";
 import { rangoDelDia } from "./fechas";
 import { decodificarEntidades } from "./texto";
 
@@ -12,13 +13,16 @@ function variable(nombre: string): string {
 // Cambia el Refresh token por un token de acceso temporal (dura ~1 hora)
 export async function tokenDeAcceso(): Promise<string> {
   if (esDemo()) return TOKEN_DEMO;
+  if (!googleConfigurado()) throw new Error("Falta conectar Google: sigue el anexo de Google de la guía (Más › Conectar con Google).");
+  const refresh = await refreshGuardado();
+  if (!refresh) throw new Error("Falta conectar tu cuenta de Google: entra a Más y toca «Conectar con Google».");
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: variable("GOOGLE_CLIENT_ID"),
       client_secret: variable("GOOGLE_CLIENT_SECRET"),
-      refresh_token: variable("GOOGLE_REFRESH_TOKEN"),
+      refresh_token: refresh,
       grant_type: "refresh_token",
     }),
     cache: "no-store",
@@ -27,7 +31,7 @@ export async function tokenDeAcceso(): Promise<string> {
     // Google explica el motivo en "error" (por ejemplo invalid_client o invalid_grant); no incluye secretos
     const detalle = (await res.json().catch(() => ({}))) as { error?: string; error_description?: string };
     const motivo = [detalle.error, detalle.error_description].filter(Boolean).join(": ");
-    throw new Error(`Google rechazó la conexión (${res.status}${motivo ? `, ${motivo}` : ""}). Revisa las llaves o genera un Refresh token nuevo.`);
+    throw new Error(`Google rechazó la conexión (${res.status}${motivo ? `, ${motivo}` : ""}). Entra a Más y toca «Conectar con Google» otra vez.`);
   }
   const datos = (await res.json()) as { access_token: string };
   return datos.access_token;

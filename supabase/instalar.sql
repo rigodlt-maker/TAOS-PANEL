@@ -7,6 +7,9 @@ create table if not exists public.panel_config (
   updated_at timestamptz not null default now()
 );
 
+-- Conexión con tu cuenta de Google (la guarda el botón "Conectar con Google"; solo la lee el servidor)
+alter table public.panel_config add column if not exists google_refresh_token text;
+
 -- Notificaciones push: tabla compartida por las apps TAOS
 create table if not exists public.push_subscriptions (
   id uuid primary key default gen_random_uuid(),

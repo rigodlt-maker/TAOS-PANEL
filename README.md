@@ -18,9 +18,10 @@ Tu día en una pantalla: agenda, correo, tareas, clima, noticias y lugares frecu
 | `ALLOWED_EMAIL` | Tu correo: solo ese puede entrar |
 | `PANEL_PASSWORD` | La contraseña con la que vas a entrar al panel |
 | `CRON_SECRET` | Un texto al azar (por ejemplo de generate-secret.vercel.app/32) |
-| `GOOGLE_CLIENT_ID` | (Para agenda, correo y tareas) De tu proyecto de Google Cloud |
-| `GOOGLE_CLIENT_SECRET` | (Para agenda, correo y tareas) De tu proyecto de Google Cloud |
-| `GOOGLE_REFRESH_TOKEN` | (Para agenda, correo y tareas) Se obtiene una vez con el anexo de Google de la guía |
+| `GOOGLE_CLIENT_ID` | (Para agenda, correo y tareas) ID de cliente de tu proyecto de Google Cloud |
+| `GOOGLE_CLIENT_SECRET` | (Para agenda, correo y tareas) Secreto del cliente de Google Cloud |
+
+Con esas dos variables, entra a **Más → Conectar con Google** en tu app: la conexión se guarda sola. (Si ya tienes un `GOOGLE_REFRESH_TOKEN`, también funciona y tiene prioridad.)
 
 ## Probar en tu computadora
 

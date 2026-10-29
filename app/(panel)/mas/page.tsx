@@ -1,3 +1,6 @@
+import { headers } from "next/headers";
+import { esDemo } from "@/lib/demo";
+import { googleConfigurado, refreshGuardado, urlRegreso } from "@/lib/google-cuenta";
 import { preferencias } from "@/lib/preferencias";
 import { lugaresConEnlaces } from "@/lib/lugares";
 import { cargarClima, cargarNoticias } from "@/lib/panel";
@@ -6,8 +9,11 @@ import { Tarjeta } from "../../componentes";
 
 export const dynamic = "force-dynamic";
 
-export default async function Mas() {
-  const [clima, noticias, lugares, { ciudad: CIUDAD }] = await Promise.all([cargarClima(), cargarNoticias(), lugaresConEnlaces(), preferencias()]);
+export default async function Mas({ searchParams }: { searchParams: Promise<{ google?: string }> }) {
+  const { google } = await searchParams;
+  const [clima, noticias, lugares, { ciudad: CIUDAD }, refresh] = await Promise.all([cargarClima(), cargarNoticias(), lugaresConEnlaces(), preferencias(), refreshGuardado().catch(() => null)]);
+  const h = await headers();
+  const regreso = urlRegreso(`${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`);
   const urlTransito = `https://www.google.com/maps/@${CIUDAD.lat},${CIUDAD.lon},11z/data=!5m1!1e1`;
   return (
     <div className="pila">
@@ -18,6 +24,31 @@ export default async function Mas() {
       <a className="boton secundario" href="/ajustes">
         ⚙️ Ajustes: nombre, ciudad y lugares
       </a>
+
+      {!esDemo() && (
+        <Tarjeta titulo="🔗 Google: agenda, correo y tareas">
+          {google === "ok" && <p className="aviso">✅ ¡Listo! Tu cuenta de Google quedó conectada.</p>}
+          {google && google !== "ok" && <p className="error">⚠️ {google}</p>}
+          {!googleConfigurado() ? (
+            <>
+              <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
+                Falta un paso de una sola vez: sigue el anexo de Google de la guía. Cuando te pida la «URI de redireccionamiento autorizada», copia esta:
+              </p>
+              <p style={{ wordBreak: "break-all", fontFamily: "monospace", fontSize: 13 }}>{regreso}</p>
+            </>
+          ) : (
+            <>
+              <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
+                {refresh ? "✅ Conectado. Si cambias de cuenta o deja de cargar tu agenda, vuelve a conectar." : "Toca el botón, elige tu cuenta y acepta los permisos."}
+              </p>
+              <a className={refresh ? "boton secundario" : "boton"} href="/api/google/conectar">
+                {refresh ? "Volver a conectar" : "Conectar con Google"}
+              </a>
+              <p className="tenue" style={{ fontSize: 12, wordBreak: "break-all" }}>URI de redireccionamiento: {regreso}</p>
+            </>
+          )}
+        </Tarjeta>
+      )}
 
       <Tarjeta titulo="🔔 Notificaciones en el celular">
         <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
