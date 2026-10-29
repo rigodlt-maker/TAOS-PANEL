@@ -1,4 +1,4 @@
--- Panel de Vida (TAOS): ajustes del panel y dispositivos con notificaciones.
+-- Optimizador de Vida (TAOS): ajustes del panel y dispositivos con notificaciones.
 -- Pega todo en Supabase › SQL Editor y toca Run. Se puede correr más de una vez.
 
 create table if not exists public.panel_config (
