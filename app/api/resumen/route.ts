@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { COOKIE_SESION, sesionValida } from "@/lib/auth";
+import { COOKIE_SESION, mismaClave, sesionValida } from "@/lib/auth";
 import { CORREO_DESTINO } from "@/lib/config";
 import { enviarCorreo, tokenDeAcceso } from "@/lib/google";
 import { cargarPanel } from "@/lib/panel";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 // También funciona desde el panel si ya iniciaste sesión (botón "Enviarme el resumen").
 export async function GET(req: Request) {
   const secreto = process.env.CRON_SECRET;
-  const desdeCron = !!secreto && req.headers.get("authorization") === `Bearer ${secreto}`;
+  const desdeCron = !!secreto && (await mismaClave(req.headers.get("authorization"), `Bearer ${secreto}`));
   const desdePanel = await sesionValida((await cookies()).get(COOKIE_SESION)?.value);
   if (!desdeCron && !desdePanel) return new Response("No autorizado", { status: 401 });
 
