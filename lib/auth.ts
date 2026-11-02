@@ -34,7 +34,7 @@ export async function mismaClave(recibida: string | null | undefined, esperada: 
 
 export async function claveCorrecta(intento: string): Promise<boolean> {
   const correcta = process.env.PANEL_PASSWORD;
-  return !!correcta && (await mismaClave(intento, correcta));
+  return !!correcta?.trim() && (await mismaClave(intento.trim(), correcta.trim()));
 }
 
 // Cookie de sesión: "<vence>.<firma>". Caduca sola y no contiene tu contraseña
