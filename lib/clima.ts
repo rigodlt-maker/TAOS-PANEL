@@ -2,7 +2,18 @@ import { ZONA } from "./config";
 import type { Ciudad } from "./preferencias";
 
 export type Dia = { fecha: string; max: number; min: number; lluvia: number; descripcion: string; icono: string };
-export type Clima = { temperatura: number; descripcion: string; icono: string; dias: Dia[] };
+export type Escena = "sol" | "luna" | "nubes" | "lluvia" | "tormenta" | "nieve" | "niebla";
+export type Clima = { temperatura: number; descripcion: string; icono: string; dias: Dia[]; escena: Escena };
+
+// Fondo animado de la pantalla Hoy según el clima de ahora
+export function escenaDe(codigo: number, deDia: boolean): Escena {
+  if (codigo >= 95) return "tormenta";
+  if ((codigo >= 51 && codigo <= 67) || (codigo >= 80 && codigo <= 82)) return "lluvia";
+  if ((codigo >= 71 && codigo <= 77) || codigo === 85 || codigo === 86) return "nieve";
+  if (codigo === 45 || codigo === 48) return "niebla";
+  if (codigo === 3) return "nubes";
+  return deDia ? "sol" : "luna";
+}
 
 // Códigos WMO que usa Open-Meteo
 function describir(codigo: number): { descripcion: string; icono: string } {
@@ -21,7 +32,7 @@ export async function obtenerClima(ciudad: Ciudad): Promise<Clima> {
   const params = new URLSearchParams({
     latitude: String(ciudad.lat),
     longitude: String(ciudad.lon),
-    current: "temperature_2m,weather_code",
+    current: "temperature_2m,weather_code,is_day",
     daily: "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
     timezone: ZONA,
     forecast_days: "2",
@@ -32,6 +43,7 @@ export async function obtenerClima(ciudad: Ciudad): Promise<Clima> {
   return {
     temperatura: Math.round(d.current.temperature_2m),
     ...describir(d.current.weather_code),
+    escena: escenaDe(d.current.weather_code, d.current.is_day !== 0),
     dias: (d.daily.time as string[]).map((fecha, i) => ({
       fecha,
       max: Math.round(d.daily.temperature_2m_max[i]),

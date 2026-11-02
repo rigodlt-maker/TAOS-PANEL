@@ -3,6 +3,7 @@ import { analizarDia, esReunion } from "./agenda";
 import { duracion, fechaLarga, horaLocal, sumarDias } from "./fechas";
 import type { DatosPanel } from "./panel";
 import { resumenSencillo } from "./resumen-sencillo";
+import { conOpciones } from "./opciones";
 
 export type LugarTao = { nombre: string; icono: string; ruta: string };
 export type DatosTao = DatosPanel & { lugares: LugarTao[] };
@@ -106,6 +107,9 @@ export function responderTao(pregunta: string, d: DatosTao): string {
   if (!q) return AYUDA;
   if (/^(hola|buenas|buenos dias|buenas tardes|buenas noches|que onda|hey)\b/.test(q) && q.split(" ").length <= 3) return `¡Hola! 👋\n\n${AYUDA}`;
   if (/\b(ayuda|que puedes|que sabes|como funcionas)\b/.test(q)) return AYUDA;
+  // "No puedo dormir": la sesión de calma (sonidos, respiración y frase del día)
+  if (/\b(no puedo dormir|no me puedo dormir|insomnio|no tengo sueno|desvelad\w*|me cuesta dormir|ansiedad|estresad\w*|relaj\w*)\b/.test(q))
+    return "Vamos a bajarle al ritmo. 🌙\n\nEntra a la [Sesión de calma](/calma): sonido de lluvia u olas, respiración guiada y una frase para hoy. Se apaga sola.\n\nSi te cuesta dormir muy seguido, platícalo con un profesional de la salud.";
 
   if (/\b(como llego|ruta|llegar|ir a|ir al|ir para|direccion de|donde queda)\b/.test(q)) {
     const lugar = d.lugares.find((l) => q.includes(normalizar(l.nombre)));
@@ -133,5 +137,5 @@ export function responderTao(pregunta: string, d: DatosTao): string {
     return "Para agregar un evento toca el botón **Evento** (abajo a la derecha): se abre Google Calendar y aparece aquí al instante.";
   if (/\b(tengo|agenda|evento\w*|reunion\w*|cita\w*|junta\w*|hoy|manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|semana)\b/.test(q)) return agenda(d, q);
 
-  return `No estoy seguro de qué me preguntas. 🤔\n\n${AYUDA}`;
+  return conOpciones("No estoy seguro de qué me preguntas. 🤔 ¿Te refieres a alguna de estas?", ["¿Qué tengo hoy?", "¿Qué tareas tengo?", "¿Tengo correos importantes?", "¿Va a llover?"]);
 }

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { separarOpciones } from "@/lib/opciones";
+import { Microfono } from "./microfono";
 
 type Mensaje = { pregunta: string; respuesta: string | null };
 
@@ -57,6 +59,25 @@ function Texto({ texto }: { texto: string }) {
         );
       })}
     </div>
+  );
+}
+
+// Respuesta con sus botones de opciones (si Tao no está seguro, te pregunta a qué te refieres)
+function Respuesta({ texto, onOpcion }: { texto: string; onOpcion?: (o: string) => void }) {
+  const { texto: limpio, opciones } = separarOpciones(texto);
+  return (
+    <>
+      <Texto texto={limpio} />
+      {onOpcion && opciones.length > 0 && (
+        <div className="tao-opciones">
+          {opciones.map((o) => (
+            <button key={o} type="button" onClick={() => onOpcion(o)}>
+              {o}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -132,7 +153,9 @@ export function BotonTao({ ejemplos }: { ejemplos: string[] }) {
                 {mensajes.map((m, i) => (
                   <div key={i} className="tao-par">
                     <p className="tao-pregunta">{m.pregunta}</p>
-                    <div className="tao-respuesta">{m.respuesta === null ? <Loader2 size={20} className="girar" /> : <Texto texto={m.respuesta} />}</div>
+                    <div className="tao-respuesta">
+                      {m.respuesta === null ? <Loader2 size={20} className="girar" /> : <Respuesta texto={m.respuesta} onOpcion={i === mensajes.length - 1 && !ocupado ? enviar : undefined} />}
+                    </div>
                   </div>
                 ))}
                 <div ref={final} />
@@ -144,6 +167,7 @@ export function BotonTao({ ejemplos }: { ejemplos: string[] }) {
                   }}
                 >
                   <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300} placeholder="¿Qué tengo hoy?" aria-label="Tu pregunta" />
+                  <Microfono onTexto={enviar} onParcial={setTexto} />
                   <button type="submit" disabled={ocupado || !texto.trim()} aria-label="Preguntar">
                     {ocupado ? <Loader2 size={20} className="girar" /> : <ArrowUp size={20} />}
                   </button>

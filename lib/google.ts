@@ -171,6 +171,26 @@ export async function correosNoLeidos(
   return { total: lista.resultSizeEstimate ?? correos.length, correos, categorias };
 }
 
+// Acciones sobre un correo desde la app: papelera (se puede recuperar 30 días en Gmail), archivar o marcar como leído
+export type AccionCorreo = "papelera" | "archivar" | "leido";
+
+export async function modificarCorreo(token: string, id: string, accion: AccionCorreo): Promise<void> {
+  if (token === TOKEN_DEMO) return; // modo demostración: correos de ejemplo
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(id)) throw new Error("Correo no válido");
+  const base = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}`;
+  const res =
+    accion === "papelera"
+      ? await fetch(`${base}/trash`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+      : await fetch(`${base}/modify`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ removeLabelIds: [accion === "archivar" ? "INBOX" : "UNREAD"] }),
+          cache: "no-store",
+        });
+  if (res.status === 403) throw new Error("Falta un permiso nuevo: entra a Menú › Conectar con Google, vuelve a conectar tu cuenta y acepta todas las casillas.");
+  if (!res.ok) throw new Error(`Gmail respondió ${res.status}. Intenta de nuevo.`);
+}
+
 function base64(texto: string): string {
   return Buffer.from(texto, "utf-8").toString("base64");
 }

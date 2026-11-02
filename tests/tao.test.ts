@@ -19,7 +19,7 @@ const datos: DatosTao = {
   semana: { ok: true, datos: [evento(hoy, "23:00", "Llamada con Ana", 2), evento(manana, "10:00", "Dentista"), evento(manana, "16:00", "Junta de equipo", 4)] },
   correo: { ok: true, datos: { total: 2, correos: [{ id: "1", de: "Ana Torres", direccion: "ana@ejemplo.com", asunto: "¿Nos vemos el jueves?", fragmento: "", enlace: "" }], categorias: [] } },
   tareas: { ok: true, datos: [{ titulo: "Pagar la luz", vence: hoy }, { titulo: "Renovar licencia", vence: sumarDias(hoy, -2) }, { titulo: "Leer 20 páginas" }] },
-  clima: { ok: true, datos: { temperatura: 21, descripcion: "Nublado", icono: "☁️", dias: [{ fecha: hoy, max: 24, min: 12, lluvia: 70, descripcion: "Lluvia ligera", icono: "🌧️" }, { fecha: manana, max: 26, min: 13, lluvia: 10, descripcion: "Soleado", icono: "☀️" }] } },
+  clima: { ok: true, datos: { temperatura: 21, descripcion: "Nublado", icono: "☁️", escena: "nubes", dias: [{ fecha: hoy, max: 24, min: 12, lluvia: 70, descripcion: "Lluvia ligera", icono: "🌧️" }, { fecha: manana, max: 26, min: 13, lluvia: 10, descripcion: "Soleado", icono: "☀️" }] } },
   noticias: { ok: true, datos: [{ titulo: "Noticia de prueba", fuente: "Diario", enlace: "" }] },
   prefs: { nombre: "Alex", ciudad: CIUDAD_BASE, lugares: [], configurado: true },
   lugares: [{ nombre: "Casa", icono: "🏡", ruta: "https://www.google.com/maps/dir/?api=1&destination=casa" }],

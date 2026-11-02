@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
-import { fechaLarga, horaActual, horaLocal } from "@/lib/fechas";
+import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
 import { cargarPanel } from "@/lib/panel";
+import { Cielo } from "../cielo";
 import { SeccionIA, Tarjeta } from "../componentes";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +26,14 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
         .filter((e) => !e.todoElDia && new Date(e.fin).getTime() > ahora)
         .slice(0, 3)
     : [];
+  // De noche (9 pm a 5 am): lo de mañana y, si no puedes dormir, la sesión de calma
+  const hora = horaActual();
+  const esNoche = hora >= 21 || hora < 5;
+  const manana = esNoche && semana.ok ? eventosDelDia(semana.datos, hora < 5 ? hoy : sumarDias(hoy, 1)) : [];
 
   return (
     <div className="pila">
+      {clima.ok && <Cielo escena={clima.datos.escena} />}
       <div className="titulo">
         <h1>
           {saludo()}
@@ -45,6 +51,18 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
         </a>
       )}
       {enviado && <p className="aviso">✅ Resumen enviado. Revisa tu correo.</p>}
+
+      {esNoche && (
+        <Tarjeta titulo="🌙 Ya es de noche">
+          <p style={{ marginTop: 0 }}>
+            {manana.length === 0 ? "Mañana tienes la agenda libre. 😌" : `Mañana tienes ${manana.length === 1 ? "1 evento" : `${manana.length} eventos`} (el primero a las ${horaLocal(manana.find((e) => !e.todoElDia)?.inicio ?? manana[0].inicio)}).`}{" "}
+            Deja el celular a un lado cuando puedas.
+          </p>
+          <a className="boton secundario" href="/calma">
+            ¿No puedes dormir? Sesión de calma
+          </a>
+        </Tarjeta>
+      )}
 
       <Suspense
         fallback={

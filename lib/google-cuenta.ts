@@ -1,22 +1,29 @@
 // Conexión con Google desde la app: el botón "Conectar con Google" guarda tu permiso (refresh token)
-// en tu Supabase. Así no hay que conseguirlo a mano. GOOGLE_REFRESH_TOKEN en Vercel, si existe, tiene prioridad.
+// en tu Supabase. Así no hay que conseguirlo a mano. Si no hay, se usa GOOGLE_REFRESH_TOKEN de Vercel.
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export const ALCANCES = [
   "https://www.googleapis.com/auth/calendar.readonly",
   "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/gmail.send",
+  // Para mandar a la papelera, archivar o marcar como leído desde la app
+  "https://www.googleapis.com/auth/gmail.modify",
   "https://www.googleapis.com/auth/tasks.readonly",
 ];
 
 export const googleConfigurado = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
+// Primero la conexión que guardó el botón (la más reciente, con los permisos nuevos); si no hay, GOOGLE_REFRESH_TOKEN de Vercel
 export async function refreshGuardado(): Promise<string | null> {
-  if (process.env.GOOGLE_REFRESH_TOKEN) return process.env.GOOGLE_REFRESH_TOKEN;
-  if (!pushConfigurado()) return null;
-  const { data, error } = await cliente().from("panel_config").select("google_refresh_token").eq("user_id", await idDelDueno()).maybeSingle();
-  if (error) return null;
-  return (data?.google_refresh_token as string | null) ?? null;
+  const deVercel = process.env.GOOGLE_REFRESH_TOKEN || null;
+  if (!pushConfigurado()) return deVercel;
+  try {
+    const { data, error } = await cliente().from("panel_config").select("google_refresh_token").eq("user_id", await idDelDueno()).maybeSingle();
+    if (error) return deVercel;
+    return (data?.google_refresh_token as string | null) || deVercel;
+  } catch {
+    return deVercel;
+  }
 }
 
 export async function guardarRefresh(token: string | null) {

@@ -267,9 +267,87 @@ li:first-child { border-top: none; padding-top: 4px; }
 .tao-form input { flex: 1; min-width: 0; height: 48px; border-radius: 999px; border: 1px solid var(--borde); background: var(--tarjeta); color: var(--texto); padding: 0 20px; font-size: 16px; }
 .tao-form button { width: 48px; padding: 0; border-radius: 999px; flex-shrink: 0; }
 .tao-form button:disabled { opacity: 0.5; }
+.tao-opciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.tao-opciones button { min-height: 44px; background: rgb(212 175 55 / 0.1); color: var(--acento); border: 1px solid rgb(212 175 55 / 0.6); border-radius: 999px; font-size: 14px; font-weight: 500; padding: 0 16px; text-align: left; }
+.tao-mic-caja { position: relative; flex-shrink: 0; display: flex; }
+.tao-form .tao-mic { background: var(--tarjeta); color: var(--acento); border: 1px solid var(--borde); }
+.tao-form .tao-mic.escuchando { background: var(--acento); color: var(--sobre-acento); animation: latido 1.2s ease-in-out infinite; }
+.tao-mic-aviso { position: absolute; right: 0; bottom: 56px; width: 220px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 12px; font-size: 12px; color: var(--tenue); }
+@keyframes latido { 50% { opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { .tao-form .tao-mic.escuchando { animation: none; } }
 .girar { animation: girar 1s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
 .barra .contenido { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .barra .abriendo { color: var(--acento); }
 .barra .abriendo svg { animation: latido 0.8s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: 0.4; } }
+
+/* Cielo animado de la pantalla Hoy (detrás de todo, muy suave) */
+.cielo { position: fixed; inset: 0 0 auto 0; height: 60vh; z-index: -1; pointer-events: none; overflow: hidden; opacity: 0.55;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent); }
+.cielo-sol { position: absolute; top: -90px; right: -70px; width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 214 102 / 0.55), rgb(212 175 55 / 0.18) 45%, transparent 70%); animation: latir-sol 8s ease-in-out infinite; }
+@keyframes latir-sol { 50% { transform: scale(1.08); opacity: 0.85; } }
+.cielo-luna { position: absolute; top: 28px; right: 34px; width: 64px; height: 64px; border-radius: 50%;
+  box-shadow: -14px 6px 0 0 rgb(240 225 180 / 0.75); filter: drop-shadow(0 0 18px rgb(240 225 180 / 0.25)); }
+.cielo-estrella { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #f5ecd0; opacity: 0.2; animation: titilar 4s ease-in-out infinite; }
+@keyframes titilar { 50% { opacity: 0.9; } }
+.cielo-nube { position: absolute; height: 60px; border-radius: 999px; background: rgb(200 205 215 / 0.18); filter: blur(10px); animation: flotar 46s linear infinite; }
+.cielo-nube.n1 { top: 30px; width: 220px; left: -240px; }
+.cielo-nube.n2 { top: 90px; width: 300px; left: -320px; animation-duration: 64s; animation-delay: -20s; }
+.cielo-nube.n3 { top: 10px; width: 180px; left: -200px; animation-duration: 54s; animation-delay: -38s; }
+@keyframes flotar { to { transform: translateX(calc(100vw + 340px)); } }
+.escena-lluvia .cielo-nube, .escena-tormenta .cielo-nube { background: rgb(140 150 165 / 0.2); }
+.cielo-gota { position: absolute; top: -20px; width: 1.5px; height: 16px; border-radius: 2px; background: linear-gradient(transparent, rgb(170 200 235 / 0.6)); animation: caer 1s linear infinite; }
+@keyframes caer { to { transform: translateY(62vh); } }
+.cielo-copo { position: absolute; top: -10px; width: 5px; height: 5px; border-radius: 50%; background: rgb(255 255 255 / 0.7); animation: nevar 9s linear infinite; }
+@keyframes nevar { to { transform: translate(30px, 62vh); } }
+/* Relámpago muy tenue y lento (sin destellos fuertes) */
+.cielo-relampago { position: absolute; inset: 0; background: rgb(220 225 255 / 0.12); opacity: 0; animation: relampago 11s ease-in-out infinite; }
+@keyframes relampago { 0%, 90%, 100% { opacity: 0; } 92% { opacity: 1; } 94% { opacity: 0.2; } 96% { opacity: 0.7; } }
+.cielo-bruma { position: absolute; left: -30%; width: 160%; height: 70px; background: linear-gradient(90deg, transparent, rgb(200 200 205 / 0.14), transparent); filter: blur(8px); animation: bruma 30s ease-in-out infinite alternate; }
+.cielo-bruma.b1 { top: 40px; }
+.cielo-bruma.b2 { top: 120px; animation-delay: -12s; }
+@keyframes bruma { to { transform: translateX(18%); } }
+@media (prefers-reduced-motion: reduce) {
+  .cielo *, .cielo { animation: none !important; }
+  .cielo-gota, .cielo-copo, .cielo-relampago { display: none; }
+}
+
+/* Sesión de calma (pantalla completa, muy oscura) */
+.calma { min-height: 100dvh; display: grid; justify-items: center; align-content: center; gap: 20px; padding: 32px 20px max(24px, env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 30%, #12141c, #050506 70%); color: #d9d6cc; text-align: center; position: relative; }
+.calma-cerrar { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 999px; color: #8a877e; }
+.calma-luna { color: #e8d9a8; opacity: 0.8; }
+.calma-respira { width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgb(212 175 55 / 0.35), rgb(212 175 55 / 0.05) 65%, transparent 70%); transform: scale(0.8); }
+.calma-respira.activa { animation: respirar 10s ease-in-out infinite; }
+@keyframes respirar { 0%, 100% { transform: scale(0.75); } 40% { transform: scale(1.15); } 55% { transform: scale(1.15); } }
+.calma-guia { margin: 0; color: #8a877e; font-size: 14px; }
+.calma-frase { margin: 0; max-width: 340px; font-size: 20px; line-height: 1.4; color: #efe8d6; }
+.calma-opciones { display: grid; gap: 14px; width: 100%; max-width: 380px; }
+.calma-fila { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.calma-fila button { min-height: 48px; padding: 0 14px; border-radius: 999px; background: transparent; color: #cfcab9; border: 1px solid #2b2b30; font-weight: 500; display: inline-flex; gap: 6px; align-items: center; }
+.calma-fila button.elegido { border-color: var(--acento); color: var(--acento); background: rgb(212 175 55 / 0.08); }
+.calma-empezar, .calma-detener { min-height: 52px; border-radius: 999px; display: inline-flex; gap: 8px; align-items: center; justify-content: center; }
+.calma-detener { background: transparent; color: #cfcab9; border: 1px solid #2b2b30; }
+.calma-tiempo { margin: 0; font-size: 44px; font-weight: 300; letter-spacing: 2px; color: #e8e1cc; }
+.calma-nota { margin: 8px 0 0; max-width: 320px; font-size: 12px; color: #6b6960; }
+@media (prefers-reduced-motion: reduce) { .calma-respira.activa { animation: none; } }
+
+/* Recorrido de bienvenida */
+.recorrido-fondo { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgb(0 0 0 / 0.7); padding: 16px 16px max(16px, env(safe-area-inset-bottom)); }
+.recorrido { position: relative; width: 100%; max-width: 440px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 24px; padding: 24px; }
+.recorrido h2 { margin: 12px 0 6px; font-size: 20px; }
+.recorrido .tenue { margin: 0; line-height: 1.5; }
+.recorrido-icono { margin: 0; font-size: 44px; }
+.recorrido-cerrar { position: absolute; top: 10px; right: 10px; width: 44px; min-height: 44px; padding: 0; background: transparent; color: var(--tenue); border-radius: 999px; }
+.recorrido-pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.recorrido-puntos { display: flex; gap: 6px; }
+.recorrido-puntos span { width: 8px; height: 8px; border-radius: 999px; background: var(--borde); transition: width 0.2s; }
+.recorrido-puntos span.activo { width: 22px; background: var(--acento); }
+.recorrido-botones { display: flex; gap: 8px; }
+.recorrido-botones button { min-height: 48px; padding: 0 18px; border-radius: 999px; }
+.recorrido-botones button.secundario { background: transparent; color: var(--acento); border: 1px solid var(--acento); }
+
+/* Acciones rápidas de cada correo */
+.correo-acciones { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.correo-acciones button { min-height: 44px; padding: 0 12px; border-radius: 999px; background: transparent; color: var(--tenue); border: 1px solid var(--borde); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
