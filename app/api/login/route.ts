@@ -1,4 +1,5 @@
 import { claveCorrecta, COOKIE_SESION, crearSesion, DURACION_SESION } from "@/lib/auth";
+import { revisarLicencia } from "@/lib/licencia";
 
 export async function POST(req: Request) {
   const form = await req.formData();
@@ -9,6 +10,8 @@ export async function POST(req: Request) {
     await new Promise((r) => setTimeout(r, 2000));
     return Response.redirect(new URL("/login?error=1", req.url), 303);
   }
+  // Sin un código de compra válido no se entra (la pantalla de entrada explica qué corregir)
+  if (!(await revisarLicencia()).ok) return Response.redirect(new URL("/login", req.url), 303);
 
   return new Response(null, {
     status: 303,

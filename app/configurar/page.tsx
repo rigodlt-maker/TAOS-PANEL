@@ -15,7 +15,7 @@ export default function Configurar() {
           <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6, fontSize: 15 }}>
             <li>Toca «Copiar código».</li>
             <li>En supabase.com abre tu proyecto y entra a SQL Editor.</li>
-            <li>Pega y toca Run. Si sale «destructive operations», toca Run query.</li>
+            <li>Pega y toca Run. Si sale «Potential issues detected», toca el botón verde Run and enable RLS.</li>
             <li>Cuando diga «Success», regresa a Ajustes.</li>
           </ol>
         </Tarjeta>

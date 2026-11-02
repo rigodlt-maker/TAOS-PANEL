@@ -4,7 +4,7 @@ Tu día en una pantalla: agenda, correo, tareas, clima, noticias y lugares frecu
 
 ## Instalar
 
-[![Instalar en Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frigodlt-maker%2Ftaos-panel&project-name=optimizador-de-vida&repository-name=optimizador-de-vida&env=NEXT_PUBLIC_SUPABASE_URL,SUPABASE_SECRET_KEY,ALLOWED_EMAIL,PANEL_PASSWORD,CRON_SECRET&envDescription=Datos%20de%20tu%20proyecto%20de%20Supabase%2C%20tu%20correo%20y%20un%20texto%20al%20azar%20para%20los%20avisos)
+[![Instalar en Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frigodlt-maker%2Ftaos-panel&project-name=optimizador-de-vida&repository-name=optimizador-de-vida&env=CODIGO_COMPRA,NEXT_PUBLIC_SUPABASE_URL,SUPABASE_SECRET_KEY,ALLOWED_EMAIL,PANEL_PASSWORD,CRON_SECRET&envDescription=Tu%20c%C3%B3digo%20de%20compra%20de%20Hotmart%20%28HP...%29%2C%20datos%20de%20tu%20proyecto%20de%20Supabase%2C%20tu%20correo%20y%20un%20texto%20al%20azar%20para%20los%20avisos)
 
 1. Toca el botón y entra con GitHub.
 2. Pega las variables (abajo) y toca **Deploy**.
@@ -13,6 +13,7 @@ Tu día en una pantalla: agenda, correo, tareas, clima, noticias y lugares frecu
 
 | Variable | Qué pegar |
 | --- | --- |
+| `CODIGO_COMPRA` | Tu código de compra de Hotmart (empieza con `HP`; viene en el correo de tu compra) |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL de tu proyecto de Supabase, solo hasta `.supabase.co` |
 | `SUPABASE_SECRET_KEY` | Secret key (`sb_secret_…`) |
 | `ALLOWED_EMAIL` | Tu correo: solo ese puede entrar |
