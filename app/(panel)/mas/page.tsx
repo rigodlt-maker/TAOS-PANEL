@@ -5,6 +5,7 @@ import { preferencias } from "@/lib/preferencias";
 import { lugaresConEnlaces } from "@/lib/lugares";
 import { cargarClima, cargarNoticias } from "@/lib/panel";
 import { AvisosPush } from "../../avisos-push";
+import { TamanoLetra } from "../../tamano-letra";
 import { Tarjeta } from "../../componentes";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,16 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
           En la mañana, tus eventos y tareas del día; en la noche, lo que tienes mañana. Actívalas en cada celular donde las quieras.
         </p>
         <AvisosPush />
+      </Tarjeta>
+
+      <Tarjeta titulo="🔠 Pantalla">
+        <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
+          Tamaño de la letra en este celular.
+        </p>
+        <TamanoLetra />
+        <a href="/?recorrido=1" style={{ display: "block", marginTop: 12, textAlign: "center", fontSize: 14 }}>
+          Ver el tutorial otra vez
+        </a>
       </Tarjeta>
 
       <Tarjeta titulo="📍 Mis lugares" extra={<a href={urlTransito} target="_blank">Tráfico</a>}>
