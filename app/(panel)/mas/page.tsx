@@ -21,6 +21,9 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         <h1>Más</h1>
       </div>
 
+      <a className="boton" href="/habitos">
+        🌱 Mis hábitos y rachas
+      </a>
       <a className="boton secundario" href="/ajustes">
         ⚙️ Ajustes: nombre, ciudad y lugares
       </a>

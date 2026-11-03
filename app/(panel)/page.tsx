@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
 import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
+import { leerHabitos, rachaCompleta } from "@/lib/habitos";
 import { cargarPanel } from "@/lib/panel";
 import { Cielo } from "../cielo";
 import { SeccionIA, Tarjeta } from "../componentes";
@@ -17,7 +18,7 @@ function saludo(): string {
 // Hoy: solo lo importante del día. Lo demás vive en Agenda, Correo, Tareas y Más.
 export default async function Hoy({ searchParams }: { searchParams: Promise<{ enviado?: string }> }) {
   const { enviado } = await searchParams;
-  const datos = await cargarPanel();
+  const [datos, habitos] = await Promise.all([cargarPanel(), leerHabitos()]);
   const { hoy, semana, tareas, clima } = datos;
   const alertas = semana.ok && tareas.ok ? alertasCruzadas(semana.datos, tareas.datos, hoy) : [];
   const ahora = Date.now();
@@ -45,6 +46,24 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
         </p>
       </div>
 
+      <a className="tarjeta habitos-hoy" href="/habitos">
+        {habitos.lista.length ? (
+          <>
+            <span>
+              🌱 <strong>Tus hábitos de hoy:</strong> {(habitos.hechos[hoy] ?? []).length} de {habitos.lista.length}
+              {rachaCompleta(habitos, hoy) > 1 && <span className="tenue"> · 🔥 {rachaCompleta(habitos, hoy)} días</span>}
+            </span>
+            <span className="tenue">Marcar →</span>
+          </>
+        ) : (
+          <>
+            <span>
+              🌱 <strong>Crea tus hábitos</strong>: dormir bien, tomar agua, menos celular…
+            </span>
+            <span className="tenue">Empezar →</span>
+          </>
+        )}
+      </a>
       {!datos.prefs.configurado && (
         <a className="aviso" href="/ajustes">
           ⚙️ Configura tu panel: tu nombre, tu ciudad para el clima y tus lugares frecuentes →

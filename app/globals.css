@@ -353,3 +353,23 @@ li:first-child { border-top: none; padding-top: 4px; }
 /* Acciones rápidas de cada correo */
 .correo-acciones { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .correo-acciones button { min-height: 44px; padding: 0 12px; border-radius: 999px; background: transparent; color: var(--tenue); border: 1px solid var(--borde); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Mis hábitos ---------- */
+.habitos { display: grid; gap: 10px; }
+.habito { width: 100%; min-height: 60px; display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 10px; padding: 10px 14px; text-align: left; background: var(--fondo); color: var(--texto); border: 1px solid var(--borde); border-radius: 16px; font-weight: 500; }
+.habito.hecho { border-color: var(--acento); background: rgb(212 175 55 / 0.12); }
+.habito-icono { font-size: 24px; }
+.habito-nombre { font-size: 16px; }
+.habito.hecho .habito-nombre { text-decoration: line-through; text-decoration-color: rgb(212 175 55 / 0.6); }
+.habito-racha { font-size: 15px; color: var(--acento); font-weight: 700; }
+.semana-habitos { display: grid; grid-template-columns: 32px repeat(7, 1fr); gap: 8px 4px; align-items: center; justify-items: center; }
+.dia-letra { font-size: 12px; color: var(--tenue); }
+.dia-letra.hoy { color: var(--acento); font-weight: 700; }
+.punto { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--borde); }
+.punto.lleno { background: var(--acento); border-color: var(--acento); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip { min-height: 44px; padding: 0 14px; border-radius: 999px; background: transparent; color: var(--texto); border: 1px solid var(--borde); font-size: 14px; font-weight: 500; }
+.fila-nuevo-habito { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; }
+.fila-nuevo-habito select, .fila-nuevo-habito input { min-height: 48px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); color: inherit; font-size: 16px; padding: 0 10px; }
+.habitos-hoy { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--texto); text-decoration: none; }
+.fila-nuevo-habito button { grid-column: 1 / -1; }

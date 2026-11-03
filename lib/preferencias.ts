@@ -38,9 +38,12 @@ export const preferencias = cache(async (): Promise<Preferencias> => {
 });
 
 export async function guardarPreferencias(p: Omit<Preferencias, "configurado">) {
-  const { error } = await cliente()
-    .from("panel_config")
-    .upsert({ user_id: await idDelDueno(), datos: p, updated_at: new Date().toISOString() });
+  const db = cliente();
+  const uid = await idDelDueno();
+  // Se conserva lo demás que vive en "datos" (por ejemplo, tus hábitos)
+  const { data } = await db.from("panel_config").select("datos").eq("user_id", uid).maybeSingle();
+  const datos = { ...((data?.datos as Record<string, unknown> | null) ?? {}), ...p };
+  const { error } = await db.from("panel_config").upsert({ user_id: uid, datos, updated_at: new Date().toISOString() });
   if (error) throw new Error(/does not exist|schema cache/i.test(error.message) ? "Falta crear la tabla en Supabase: entra a Más › Ajustes › Configurar base de datos." : error.message);
 }
 

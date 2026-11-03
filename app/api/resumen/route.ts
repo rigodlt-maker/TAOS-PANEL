@@ -4,7 +4,8 @@ import { CORREO_DESTINO } from "@/lib/config";
 import { enviarCorreo, tokenDeAcceso } from "@/lib/google";
 import { cargarPanel } from "@/lib/panel";
 import { resumenIA, type Momento, type ResumenIA } from "@/lib/ia";
-import { avisoDelDia, enviarPush } from "@/lib/push";
+import { avisoHabitos, leerHabitos } from "@/lib/habitos";
+import { avisoDelDia, enviarPush, type AvisoPush } from "@/lib/push";
 import { construirResumen } from "@/lib/resumen";
 import type { Seccion } from "@/lib/panel";
 
@@ -28,7 +29,13 @@ export async function GET(req: Request) {
     if (!ia.ok) console.error("La IA falló:", ia.error);
     const { asunto, html } = construirResumen(momento, datos, ia);
     // Notificación en el celular antes del correo, así llega aunque el correo falle (solo la del cron, para no repetirla al pedir el resumen a mano)
-    if (desdeCron) await enviarPush(avisoDelDia(momento, datos.hoy, datos.semana.ok ? datos.semana.datos : null, datos.tareas.ok ? datos.tareas.datos : null));
+    if (desdeCron) {
+      const avisos: AvisoPush[] = [avisoDelDia(momento, datos.hoy, datos.semana.ok ? datos.semana.datos : null, datos.tareas.ok ? datos.tareas.datos : null)];
+      // En la noche, si faltan hábitos de hoy, un recordatorio aparte
+      const habitos = momento === "noche" ? avisoHabitos(await leerHabitos().catch(() => ({ lista: [], hechos: {} })), datos.hoy) : null;
+      if (habitos) avisos.push(habitos);
+      await enviarPush(avisos);
+    }
     await enviarCorreo(await tokenDeAcceso(), CORREO_DESTINO, asunto, html);
     if (desdePanel && !desdeCron) return Response.redirect(new URL("/?enviado=1", req.url), 303);
     return Response.json({ ok: true, momento, asunto });
