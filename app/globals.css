@@ -422,3 +422,19 @@ html[data-letra="muy-grande"] main { zoom: 1.25; }
 .letra button { display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 6px; border: 1px solid var(--borde); border-radius: 16px; background: transparent; color: var(--tenue); }
 .letra button[aria-checked="true"] { border-color: var(--acento); color: var(--acento); background: rgb(212 175 55 / 0.1); }
 .letra small { font-size: 12px; }
+
+/* Mis medicinas */
+.campos select { min-height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); font-size: 16px; }
+.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lista-simple { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.lista-simple li a { display: flex; align-items: center; min-height: 44px; }
+.fila-medicina { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; min-height: 60px; padding: 6px 0; border-bottom: 1px solid var(--borde); }
+.fila-medicina:last-child { border-bottom: 0; }
+.mini-foto { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; object-fit: cover; background: var(--fondo); font-size: 20px; }
+.fila-medicina .mini-foto { width: 44px; height: 44px; }
+.foto-medicina { display: flex; align-items: center; gap: 14px; }
+.foto-medicina img, .foto-vacia { width: 72px; height: 72px; flex-shrink: 0; border-radius: 16px; object-fit: cover; border: 1px solid var(--borde); }
+.foto-vacia { display: grid; place-items: center; font-size: 34px; background: var(--fondo); }
+.foto-medicina .boton { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.enlace-quitar { display: block; min-height: 40px; padding: 0; background: transparent; color: var(--tenue); font-size: 14px; font-weight: 400; }
+.alerta-medicina { border-color: var(--acento); }

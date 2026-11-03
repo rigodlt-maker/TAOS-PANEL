@@ -8,6 +8,6 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Login, privacidad, logo, íconos, archivos de la app y el resumen (que tiene su propia protección) quedan fuera
-  matcher: ["/((?!login|privacidad|logo|icon|apple-icon|manifest.webmanifest|sw.js|api/login|api/resumen|_next|favicon.ico).*)"],
+  // Login, privacidad, logo, íconos, archivos de la app, el resumen y los avisos de medicinas (con su propia protección) quedan fuera
+  matcher: ["/((?!login|privacidad|logo|icon|apple-icon|manifest.webmanifest|sw.js|api/login|api/resumen|api/medicinas/tick|api/medicinas/foto|api/medicinas/tomada|_next|favicon.ico).*)"],
 };

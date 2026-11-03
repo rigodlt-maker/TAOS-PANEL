@@ -7,7 +7,8 @@ import { horaLocal, sumarDias } from "./fechas";
 import type { Evento, Tarea } from "./google";
 
 // Lo que aparece en la notificación del celular. "etiqueta" hace que un aviso nuevo reemplace al anterior del mismo tema.
-export type AvisoPush = { titulo: string; cuerpo: string; url?: string; etiqueta?: string };
+// imagen: foto grande en el aviso (Android) · acciones: botones del aviso · tomar: dirección que se llama al tocar "Ya me la tomé"
+export type AvisoPush = { titulo: string; cuerpo: string; url?: string; etiqueta?: string; imagen?: string; acciones?: { action: string; title: string }[]; tomar?: string };
 export type SuscripcionPush = { endpoint: string; p256dh: string; auth: string; dispositivo: string | null };
 
 // El panel no tiene base de datos propia: los celulares suscritos se guardan en el Supabase compartido de las apps TAOS

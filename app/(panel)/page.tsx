@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
 import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
 import { leerHabitos, rachaCompleta } from "@/lib/habitos";
+import { ahoraLocal, leerMedicinas, tomasDelDia } from "@/lib/medicinas";
 import { cargarAire, cargarPanel } from "@/lib/panel";
 import { AireYSalud } from "../aire-salud";
 import { Cielo } from "../cielo";
@@ -19,7 +20,7 @@ function saludo(): string {
 // Hoy: solo lo importante del día. Lo demás vive en Agenda, Correo, Tareas y Más.
 export default async function Hoy({ searchParams }: { searchParams: Promise<{ enviado?: string }> }) {
   const { enviado } = await searchParams;
-  const [datos, habitos, aire] = await Promise.all([cargarPanel(), leerHabitos(), cargarAire()]);
+  const [datos, habitos, aire, medicinas] = await Promise.all([cargarPanel(), leerHabitos(), cargarAire(), leerMedicinas()]);
   const { hoy, semana, tareas, clima } = datos;
   const alertas = semana.ok && tareas.ok ? alertasCruzadas(semana.datos, tareas.datos, hoy) : [];
   const ahora = Date.now();
@@ -67,6 +68,7 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
           </>
         )}
       </a>
+      {medicinas.lista.length > 0 && <TarjetaMedicinas tomas={tomasDelDia(medicinas, hoy)} />}
       {!datos.prefs.configurado && (
         <a className="aviso" href="/ajustes">
           ⚙️ Configura tu panel: tu nombre, tu ciudad para el clima y tus lugares frecuentes →
@@ -130,3 +132,23 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
     </div>
   );
 }
+
+// Medicinas de hoy en una línea: cuántas llevas y cuál sigue
+function TarjetaMedicinas({ tomas }: { tomas: ReturnType<typeof tomasDelDia> }) {
+  const ahora = ahoraLocal().hora;
+  const pendientes = tomas.filter((t) => !t.hecha);
+  const atrasada = pendientes.find((t) => t.hora <= ahora);
+  const siguiente = pendientes.find((t) => t.hora > ahora);
+  return (
+    <a className={atrasada ? "tarjeta habitos-hoy alerta-medicina" : "tarjeta habitos-hoy"} href="/medicinas">
+      <span>
+        💊 <strong>Medicinas:</strong> {tomas.length - pendientes.length} de {tomas.length}
+        <span className="tenue">
+          {atrasada ? ` · te falta ${atrasada.m.nombre} de las ${atrasada.hora}` : siguiente ? ` · sigue ${siguiente.m.nombre} a las ${siguiente.hora}` : " · ¡listas por hoy!"}
+        </span>
+      </span>
+      <span className="tenue">{atrasada ? "Marcar →" : "Ver →"}</span>
+    </a>
+  );
+}
+

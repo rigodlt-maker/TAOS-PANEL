@@ -33,7 +33,10 @@ self.addEventListener("push", (evento) => {
       badge: "/icono-192.png",
       tag: aviso.etiqueta || undefined,
       renotify: !!aviso.etiqueta,
-      data: { url: aviso.url || "/" },
+      image: aviso.imagen || undefined,
+      actions: aviso.acciones || [],
+      requireInteraction: !!aviso.tomar,
+      data: { url: aviso.url || "/", tomar: aviso.tomar || null },
     }),
   );
 });
@@ -41,6 +44,11 @@ self.addEventListener("push", (evento) => {
 // Al tocar la notificación se abre la app en la pantalla del aviso (o se reutiliza la ventana abierta)
 self.addEventListener("notificationclick", (evento) => {
   evento.notification.close();
+  // "✅ Ya me la tomé": se marca sin abrir la app
+  if (evento.action === "tomada" && evento.notification.data?.tomar) {
+    evento.waitUntil(fetch(evento.notification.data.tomar, { method: "POST" }).catch(() => {}));
+    return;
+  }
   const destino = new URL(evento.notification.data?.url || "/", self.location.origin).href;
   evento.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((ventanas) => {
