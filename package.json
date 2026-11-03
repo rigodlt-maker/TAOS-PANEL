@@ -27,5 +27,6 @@
     "@types/web-push": "^3.6.4",
     "tsx": "^4.23.15",
     "typescript": "^5"
-  }
+  },
+  "license": "UNLICENSED"
 }
