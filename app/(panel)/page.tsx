@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
 import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
 import { leerHabitos, rachaCompleta } from "@/lib/habitos";
-import { cargarPanel } from "@/lib/panel";
+import { cargarAire, cargarPanel } from "@/lib/panel";
+import { AireYSalud } from "../aire-salud";
 import { Cielo } from "../cielo";
 import { SeccionIA, Tarjeta } from "../componentes";
 
@@ -18,7 +19,7 @@ function saludo(): string {
 // Hoy: solo lo importante del día. Lo demás vive en Agenda, Correo, Tareas y Más.
 export default async function Hoy({ searchParams }: { searchParams: Promise<{ enviado?: string }> }) {
   const { enviado } = await searchParams;
-  const [datos, habitos] = await Promise.all([cargarPanel(), leerHabitos()]);
+  const [datos, habitos, aire] = await Promise.all([cargarPanel(), leerHabitos(), cargarAire()]);
   const { hoy, semana, tareas, clima } = datos;
   const alertas = semana.ok && tareas.ok ? alertasCruzadas(semana.datos, tareas.datos, hoy) : [];
   const ahora = Date.now();
@@ -42,11 +43,13 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
         </h1>
         <p>
           {fechaLarga(hoy)}
-          {clima.ok && ` · ${clima.datos.icono} ${clima.datos.temperatura}° ${clima.datos.descripcion.toLowerCase()}`}
+          {clima.ok && ` · ${clima.datos.descripcion}`}
         </p>
       </div>
 
-      <a className="tarjeta habitos-hoy" href="/habitos">
+      <AireYSalud clima={clima.ok ? clima.datos : null} aire={aire.ok ? aire.datos : null} ciudad={datos.prefs.ciudad.nombre} auto={datos.prefs.auto} hoy={hoy} />
+
+      <a className="tarjeta habitos-hoy" href="/habitos" data-recorrido="habitos">
         {habitos.lista.length ? (
           <>
             <span>

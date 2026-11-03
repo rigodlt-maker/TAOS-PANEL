@@ -1,3 +1,4 @@
+import { obtenerAire } from "./aire";
 import { obtenerClima } from "./clima";
 import { preferencias } from "./preferencias";
 import { fechaLocal, sumarDias } from "./fechas";
@@ -7,7 +8,7 @@ import { obtenerNoticias } from "./noticias";
 export type Seccion<T> = { ok: true; datos: T } | { ok: false; error: string };
 
 // Si una sección falla, las demás siguen funcionando
-async function seguro<T>(promesa: Promise<T>): Promise<Seccion<T>> {
+export async function seguro<T>(promesa: Promise<T>): Promise<Seccion<T>> {
   try {
     return { ok: true, datos: await promesa };
   } catch (e) {
@@ -49,5 +50,6 @@ export const cargarCorreo = async () => seguro(tokenDeAcceso().then((t) => corre
 export const cargarTareas = async () => seguro(tokenDeAcceso().then((t) => tareasPendientes(t)));
 export const cargarClima = async () => seguro(preferencias().then((p) => obtenerClima(p.ciudad)));
 export const cargarNoticias = async () => seguro(obtenerNoticias());
+export const cargarAire = async () => seguro(preferencias().then((p) => obtenerAire(p.ciudad)));
 
 export type DatosPanel = Awaited<ReturnType<typeof cargarPanel>>;

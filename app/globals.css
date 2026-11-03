@@ -336,19 +336,9 @@ li:first-child { border-top: none; padding-top: 4px; }
 @media (prefers-reduced-motion: reduce) { .calma-respira.activa { animation: none; } }
 
 /* Recorrido de bienvenida */
-.recorrido-fondo { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgb(0 0 0 / 0.7); padding: 16px 16px max(16px, env(safe-area-inset-bottom)); }
-.recorrido { position: relative; width: 100%; max-width: 440px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 24px; padding: 24px; }
-.recorrido h2 { margin: 12px 0 6px; font-size: 20px; }
-.recorrido .tenue { margin: 0; line-height: 1.5; }
-.recorrido-icono { margin: 0; font-size: 44px; }
-.recorrido-cerrar { position: absolute; top: 10px; right: 10px; width: 44px; min-height: 44px; padding: 0; background: transparent; color: var(--tenue); border-radius: 999px; }
-.recorrido-pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
 .recorrido-puntos { display: flex; gap: 6px; }
 .recorrido-puntos span { width: 8px; height: 8px; border-radius: 999px; background: var(--borde); transition: width 0.2s; }
 .recorrido-puntos span.activo { width: 22px; background: var(--acento); }
-.recorrido-botones { display: flex; gap: 8px; }
-.recorrido-botones button { min-height: 48px; padding: 0 18px; border-radius: 999px; }
-.recorrido-botones button.secundario { background: transparent; color: var(--acento); border: 1px solid var(--acento); }
 
 /* Acciones rápidas de cada correo */
 .correo-acciones { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -373,3 +363,32 @@ li:first-child { border-top: none; padding-top: 4px; }
 .fila-nuevo-habito select, .fila-nuevo-habito input { min-height: 48px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); color: inherit; font-size: 16px; padding: 0 10px; }
 .habitos-hoy { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--texto); text-decoration: none; }
 .fila-nuevo-habito button { grid-column: 1 / -1; }
+
+/* Aire y salud (Hoy) */
+.aire { padding: 14px 12px 12px; }
+.aire-titulo { margin: 0 0 10px; text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--tenue); }
+.aire-fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px; }
+.aire-dato { display: grid; justify-items: center; align-content: start; gap: 4px; color: inherit; text-align: center; }
+.aire-dato strong { font-size: 15px; line-height: 1.2; }
+.aire-dato .aire-corto { font-size: 13px; }
+.aire-icono { display: grid; place-items: center; width: 64px; height: 64px; font-size: 36px; }
+.arco { position: relative; display: grid; place-items: center; width: 64px; height: 64px; }
+.arco svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.arco-centro { position: relative; display: grid; justify-items: center; font-size: 22px; line-height: 1; }
+.arco-centro b { font-size: 20px; }
+.arco-centro small { font-size: 11px; color: var(--tenue); }
+.aire-consejo { margin: 10px 2px 0; font-size: 14px; line-height: 1.4; }
+
+/* Recorrido con reflector: oscurece todo e ilumina el botón que se explica */
+.reflector { position: fixed; inset: 0; z-index: 60; }
+.reflector-sombra { position: fixed; inset: 0; background: rgb(0 0 0 / 0.8); }
+.reflector-luz { position: fixed; pointer-events: none; border: 2px solid var(--acento); border-radius: 16px; box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.8), 0 0 24px rgb(212 175 55 / 0.6); transition: all 0.3s; }
+.reflector-texto { position: fixed; left: 0; right: 0; padding: 0 24px; text-align: center; transition: all 0.3s; }
+.reflector-texto h2 { margin: 8px 0 0; font-size: 24px; color: var(--acento); }
+.reflector-texto p { max-width: 380px; margin: 8px auto 0; font-size: 17px; line-height: 1.35; color: #fff; }
+.reflector-texto .reflector-icono { margin: 0; font-size: 36px; }
+.reflector-flecha { position: fixed; pointer-events: none; color: var(--acento); }
+.reflector-saltar { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px; display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 16px; border-radius: 999px; background: rgb(255 255 255 / 0.1); color: #fff; font-size: 14px; }
+.reflector-controles { position: fixed; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; }
+.reflector-controles button { min-height: 48px; padding: 0 20px; border-radius: 999px; font-size: 16px; font-weight: 600; }
+.reflector-controles .secundario { background: #1c1c1c; color: #fff; }

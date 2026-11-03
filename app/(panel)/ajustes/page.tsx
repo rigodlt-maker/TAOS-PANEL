@@ -33,6 +33,33 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
             </label>
           </div>
         </Tarjeta>
+        <Tarjeta titulo="🚗 Mi auto (Hoy No Circula)">
+          <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
+            Solo en Ciudad de México y Estado de México. Con esto, en Hoy te digo si tu auto circula. Déjalo vacío si no tienes auto.
+          </p>
+          <div className="campos">
+            <label>
+              Último número de la placa
+              <select name="auto_terminacion" defaultValue={p.auto ? String(p.auto.terminacion) : ""}>
+                <option value="">Sin auto</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Holograma de verificación
+              <select name="auto_holograma" defaultValue={p.auto?.holograma ?? "1"}>
+                <option value="00">00 (auto nuevo o eléctrico)</option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </label>
+          </div>
+        </Tarjeta>
         <Tarjeta titulo="📍 Lugares frecuentes">
           <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
             Aparecen en Menú con botón para ver el tráfico y llegar. Escribe la dirección o pega el enlace que copias en Google Maps o en Mapas

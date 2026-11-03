@@ -123,7 +123,7 @@ export function BotonTao({ ejemplos }: { ejemplos: string[] }) {
 
   return (
     <>
-      <button type="button" className="tao-boton" onClick={() => setAbierto(true)} aria-haspopup="dialog">
+      <button type="button" className="tao-boton" onClick={() => setAbierto(true)} aria-haspopup="dialog" data-recorrido="tao">
         <Sparkles size={20} />
         Tao
       </button>

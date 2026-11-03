@@ -31,7 +31,7 @@ export function Navegacion() {
     <>
       <div className="fab-zona">
         <div>
-          <a className="fab" href="https://calendar.google.com/calendar/r/eventedit" target="_blank">
+          <a className="fab" href="https://calendar.google.com/calendar/r/eventedit" target="_blank" data-recorrido="flotante">
             <CalendarPlus size={24} strokeWidth={2.4} />
             Evento
           </a>
@@ -41,7 +41,7 @@ export function Navegacion() {
         <ul>
           {SECCIONES.map((s) => (
             <li key={s.ruta}>
-              <Link href={s.ruta} aria-current={activa(s.ruta) ? "page" : undefined}>
+              <Link href={s.ruta} aria-current={activa(s.ruta) ? "page" : undefined} data-recorrido={s.ruta}>
                 <Contenido icono={s.icono} nombre={s.nombre} activa={activa(s.ruta)} />
               </Link>
             </li>

@@ -6,11 +6,14 @@ import { BotonTao } from "../tao";
 
 // Recorrido de bienvenida (sale una sola vez)
 const RECORRIDO: Paso[] = [
-  { icono: "☀️", titulo: "Bienvenido a Optimizador de Vida", texto: "En Hoy ves tu día en una línea: reuniones, pendientes, correos importantes y el clima." },
-  { icono: "📅", titulo: "Agenda, Correo y Tareas", texto: "Todo sale de tu cuenta de Google. Lo que agregas en Google Calendar o Tasks aparece aquí solo." },
-  { icono: "🗣️", titulo: "Agenda con tu voz", texto: "Di “Ok Google, agenda dentista el viernes a las 5” o “Oye Siri…” (con Google como calendario) y aparece en tu panel sin escribir nada." },
-  { icono: "🌙", titulo: "De noche, calma", texto: "Después de las 9 pm verás lo de mañana y, si no puedes dormir, una sesión de calma con sonidos y respiración." },
-  { icono: "🎙️", titulo: "Pregúntale a Tao", texto: "Toca el botón dorado y escribe o habla: “¿qué tengo hoy?”, “¿va a llover?”, “¿cómo llego a casa?”." },
+  { icono: "☀️", titulo: "Bienvenido a Optimizador de Vida", texto: "Tu día en una sola pantalla: agenda, pendientes, correo, clima y hábitos. Te enseño lo básico en 1 minuto." },
+  { icono: "💨", titulo: "Aire y salud", texto: "Clima, calidad del aire, rayos UV y si tu auto circula hoy (agrega tu placa en Ajustes).", donde: "aire" },
+  { icono: "🌱", titulo: "Tus hábitos", texto: "Palomea cada día dormir bien, tomar agua o lo que tú elijas, y cuida tu racha.", donde: "habitos" },
+  { icono: "📅", titulo: "Agenda", texto: "Lo de tu Google Calendar. Di “Ok Google, agenda dentista el viernes a las 5” y aparece aquí.", donde: "/agenda" },
+  { icono: "✅", titulo: "Tareas y correo", texto: "Tus pendientes de Google Tasks y los correos importantes, sin abrir otras apps.", donde: "/tareas" },
+  { icono: "➕", titulo: "Nuevo evento", texto: "Agrega una cita a tu calendario en un toque.", donde: "flotante" },
+  { icono: "⚙️", titulo: "Menú", texto: "Lugares frecuentes con tráfico, sesión de calma, Ajustes y avisos.", donde: "/mas" },
+  { icono: "🎙️", titulo: "Pregúntale a Tao", texto: "“¿Qué tengo hoy?”, “¿va a llover?”, “¿cómo llego a casa?”.", donde: "tao" },
 ];
 
 export default function LayoutPanel({ children }: { children: React.ReactNode }) {
