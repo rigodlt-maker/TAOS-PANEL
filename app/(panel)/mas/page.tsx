@@ -72,6 +72,12 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         <a href="/?recorrido=1" style={{ display: "block", marginTop: 12, textAlign: "center", fontSize: 14 }}>
           Ver el tutorial otra vez
         </a>
+        {/* Lo calcula scripts/integridad.cjs al publicar: sirve para soporte (pide captura de esta línea) */}
+        {process.env.NEXT_PUBLIC_TAOS_MODIFICADA && (
+          <p className="tenue" style={{ fontSize: 12, textAlign: "center", margin: "4px 0 0" }}>
+            {process.env.NEXT_PUBLIC_TAOS_MODIFICADA === "1" ? "Versión modificada · sin soporte de TAOS" : "Versión original de TAOS ✓"}
+          </p>
+        )}
       </Tarjeta>
 
       <Tarjeta titulo="📍 Mis lugares" extra={<a href={urlTransito} target="_blank">Tráfico</a>}>
