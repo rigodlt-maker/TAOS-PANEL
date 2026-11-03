@@ -240,8 +240,10 @@ li:first-child { border-top: none; padding-top: 4px; }
   font-size: 16px;
   width: 100%;
 }
-.fila-lugar { display: grid; grid-template-columns: 56px 1fr; gap: 8px; }
+.fila-lugar { display: grid; grid-template-columns: 124px 1fr 48px; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--borde); }
 .fila-lugar input:last-child { grid-column: 1 / -1; }
+.fila-lugar select { min-height: 48px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); color: inherit; font-size: 16px; padding: 0 6px; }
+.borrar-lugar { min-height: 48px; padding: 0; background: transparent; border: 1px solid var(--borde); color: inherit; font-size: 18px; }
 
 /* ---------- Tao: botón del encabezado y hoja del chat (igual en las 4 apps TAOS) ---------- */
 .tao-boton { min-height: 44px; padding: 0 16px; border-radius: 999px; font-size: 14px; gap: 8px; box-shadow: 0 4px 16px rgb(212 175 55 / 0.3); }

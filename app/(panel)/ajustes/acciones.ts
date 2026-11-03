@@ -17,7 +17,7 @@ export async function guardarAjustes(f: FormData) {
     const iconos = f.getAll("lugar_icono").map(String);
     const direcciones = f.getAll("lugar_direccion").map(String);
     const lugares = nombres
-      .map((nombre, i) => ({ nombre: nombre.trim().slice(0, 40), icono: (iconos[i] || "📍").trim().slice(0, 8), direccion: (direcciones[i] ?? "").trim().slice(0, 200) }))
+      .map((nombre, i) => ({ nombre: nombre.trim().slice(0, 40), icono: (iconos[i] || "📍").trim().slice(0, 8), direccion: (direcciones[i] ?? "").trim().slice(0, 300) }))
       .filter((l) => l.nombre && l.direccion);
     await guardarPreferencias({ nombre: texto("nombre").slice(0, 40), ciudad, lugares });
     revalidatePath("/", "layout");

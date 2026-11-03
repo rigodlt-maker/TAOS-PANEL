@@ -1,16 +1,13 @@
 import { preferencias } from "@/lib/preferencias";
 import { Tarjeta } from "../../componentes";
 import { guardarAjustes } from "./acciones";
+import { Lugares } from "./lugares";
 
 export const dynamic = "force-dynamic";
-
-const ICONOS = ["🏡", "💼", "🏋️", "👨‍👩‍👧", "🏫", "🏥", "🛒", "☕", "✈️", "📍"];
 
 export default async function Ajustes({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { ok, error } = await searchParams;
   const p = await preferencias();
-  // Siempre hay 3 renglones vacíos para agregar lugares nuevos
-  const filas = [...p.lugares, ...Array.from({ length: 3 }, () => ({ nombre: "", icono: "", direccion: "" }))];
   return (
     <div className="pila">
       <div className="titulo">
@@ -38,17 +35,10 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         </Tarjeta>
         <Tarjeta titulo="📍 Lugares frecuentes">
           <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
-            Aparecen en Más con botón para ver el tráfico y llegar. Deja vacío un renglón para borrarlo.
+            Aparecen en Menú con botón para ver el tráfico y llegar. Escribe la dirección o pega el enlace que copias en Google Maps o en Mapas
+            (Compartir › Copiar). Al terminar toca Guardar.
           </p>
-          <div className="campos">
-            {filas.map((l, i) => (
-              <div key={i} className="fila-lugar">
-                <input name="lugar_icono" defaultValue={l.icono || ICONOS.at(i % ICONOS.length)} aria-label={`Ícono del lugar ${i + 1}`} />
-                <input name="lugar_nombre" defaultValue={l.nombre} placeholder="Nombre (Casa, Trabajo…)" aria-label={`Nombre del lugar ${i + 1}`} />
-                <input name="lugar_direccion" defaultValue={l.direccion} placeholder="Dirección o nombre del lugar" aria-label={`Dirección del lugar ${i + 1}`} />
-              </div>
-            ))}
-          </div>
+          <Lugares iniciales={p.lugares} />
         </Tarjeta>
         <button type="submit" className="boton">
           Guardar
