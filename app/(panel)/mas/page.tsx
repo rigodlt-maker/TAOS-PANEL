@@ -64,6 +64,13 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         <AvisosPush />
       </Tarjeta>
 
+      <a href="/sugerencias" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, minHeight: 56, padding: "12px 16px", marginBottom: 16, borderRadius: 16, border: "1px solid rgba(212,175,55,.6)", background: "#151515", color: "#fff", textDecoration: "none" }}>
+        <span>
+          <strong style={{ display: "block" }}>💬 Enviar una sugerencia</strong>
+          <span className="tenue" style={{ fontSize: 12 }}>Ideas, fallas o mejoras: llegan directo al equipo de TAOS</span>
+        </span>
+        <span style={{ color: "#d4af37" }}>›</span>
+      </a>
       <Tarjeta titulo="🔠 Pantalla">
         <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
           Tamaño de la letra en este celular.
