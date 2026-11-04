@@ -3,6 +3,7 @@ import { EJEMPLOS_TAO } from "@/lib/tao";
 import { Navegacion } from "../navegacion";
 import { Recorrido, type Paso } from "../recorrido";
 import { Campana } from "../campana";
+import { Actualizacion } from "../actualizacion";
 import { BotonTao } from "../tao";
 
 // Recorrido de bienvenida (sale una sola vez)
@@ -31,6 +32,7 @@ export default function LayoutPanel({ children }: { children: React.ReactNode })
           <BotonTao ejemplos={EJEMPLOS_TAO} />
         </div>
       </header>
+      <Actualizacion repo="taos-panel" />
       <main>{children}</main>
       <Suspense>
         <Recorrido pasos={RECORRIDO} />
