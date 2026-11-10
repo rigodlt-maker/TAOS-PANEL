@@ -12,21 +12,26 @@ export type Datos = Record<string, unknown>;
 export type Operacion = { id: string; huella: string };
 
 // ¿Falta correr el SQL de seguridad 1.3? (la pantalla de Ajustes lo avisa; mientras, se usa el guardado anterior)
+// S14-B2 · Contrato preciso, nunca por el texto del error: la ÚNICA señal de "instalación sin 1.3" es que la columna
+// panel_config.version no exista (código 42703 de Postgres). Si la columna existe, la instalación ya es 1.3 y cualquier
+// error del guardado seguro se muestra y NO se escribe por la ruta anterior (además, el SQL 1.3 bloquea esa ruta).
 const g = globalThis as unknown as { __faltaSqlSeguridad?: boolean };
 export const faltaSqlSeguridad = () => g.__faltaSqlSeguridad === true;
-const esFaltaSql = (m: string) => /panel_guardar|column .*version|version.*does not exist|schema cache|could not find the function/i.test(m);
+type ErrorDb = { code?: string; message: string };
+export const sinColumnaVersion = (e: ErrorDb) => e.code === "42703" && /\bversion\b/.test(e.message);
 
 export const huellaDe = (x: unknown) => createHash("sha256").update(JSON.stringify(x)).digest("base64url").slice(0, 32);
 
 export class ConflictoDeGuardado extends Error {}
 
-export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operacion, intentos = 5): Promise<"ok" | "repetida"> {
-  const db = cliente();
-  const uid = await idDelDueno();
+type Cliente = Pick<ReturnType<typeof cliente>, "from" | "rpc">;
+
+export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operacion, intentos = 5, db: Cliente = cliente(), usuario?: string): Promise<"ok" | "repetida"> {
+  const uid = usuario ?? (await idDelDueno());
   for (let i = 0; i < intentos; i++) {
     const leida = await db.from("panel_config").select("datos, version").eq("user_id", uid).maybeSingle();
     if (leida.error) {
-      if (esFaltaSql(leida.error.message)) return guardarSinVersion(cambio, uid);
+      if (sinColumnaVersion(leida.error)) return guardarSinVersion(cambio, uid, db);
       throw new Error("No se pudieron leer tus datos; no se guardó nada. Intenta de nuevo en un momento.");
     }
     const datos = (leida.data?.datos as Datos | null) ?? {};
@@ -34,8 +39,10 @@ export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operaci
     const cambios = cambio(datos);
     const r = await db.rpc("panel_guardar", { p_usuario: uid, p_version: version, p_cambios: cambios, p_op_id: op?.id ?? null, p_huella: op?.huella ?? null });
     if (r.error) {
-      if (esFaltaSql(r.error.message)) return guardarSinVersion(cambio, uid);
-      throw new Error(r.error.message);
+      // Instalación a medias (columna sí, función no): avisar y no guardar
+      if (r.error.code === "PGRST202") g.__faltaSqlSeguridad = true;
+      console.error("panel_guardar:", r.error.code, r.error.message);
+      throw new Error("No se pudo guardar con seguridad; no se cambió nada. Intenta de nuevo en un momento.");
     }
     g.__faltaSqlSeguridad = false;
     const estado = (r.data as { estado: string }).estado;
@@ -48,9 +55,8 @@ export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operaci
 }
 
 // Mientras no se corre el SQL de seguridad 1.3: el guardado anterior (sin versión), pero sin escribir encima si falla la lectura
-async function guardarSinVersion(cambio: (datos: Datos) => Datos, uid: string): Promise<"ok"> {
+async function guardarSinVersion(cambio: (datos: Datos) => Datos, uid: string, db: Cliente): Promise<"ok"> {
   g.__faltaSqlSeguridad = true;
-  const db = cliente();
   const { data, error } = await db.from("panel_config").select("datos").eq("user_id", uid).maybeSingle();
   if (error) throw new Error(/does not exist|schema cache/i.test(error.message) ? "Falta crear la tabla en Supabase: entra a Menú › Ajustes › Configurar base de datos." : "No se pudieron leer tus datos; no se guardó nada.");
   const actuales = (data?.datos as Datos | null) ?? {};

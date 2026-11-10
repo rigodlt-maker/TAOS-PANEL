@@ -48,29 +48,48 @@ export function claveDe(ip: string): string {
 const g = globalThis as unknown as { __intentosSinSql?: boolean };
 export const intentosSinSql = () => g.__intentosSinSql === true;
 
-// ---------- Lo que usa la entrada ----------
-export async function reservarIntento(ip: string): Promise<{ permitido: boolean; esperaSeg: number; clave: string }> {
+// S17-A · Política de fallo (acordada con Codex): el contador de memoria SOLO se usa si la instalación todavía no tiene
+// el SQL 1.3 (la función no existe: código PGRST202, contrato preciso). Con el SQL ya instalado, cualquier error de la
+// base de datos = "no disponible" (503): no se revisa la contraseña ni se usa un contador aparte por servidor.
+export type Reserva =
+  | { permitido: true; clave: string; generacion: number; numero: number; memoria: boolean }
+  | { permitido: false; clave: string; esperaSeg: number; noDisponible?: boolean };
+
+type Rpc = (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { code?: string; message: string } | null }>;
+const rpcReal: Rpc = (fn, args) => cliente().rpc(fn, args);
+
+export async function reservarIntento(ip: string, rpc: Rpc = rpcReal): Promise<Reserva> {
   const clave = claveDe(ip);
+  let r: Awaited<ReturnType<Rpc>>;
   try {
-    const { data, error } = await cliente().rpc("panel_reservar_intento", { p_clave: clave, p_max: MAX_INTENTOS, p_ventana_seg: VENTANA_MS / 1000, p_bloqueo_seg: BLOQUEO_MS / 1000 });
-    if (error) throw new Error(error.message);
-    g.__intentosSinSql = false;
-    const fila = (Array.isArray(data) ? data[0] : data) as { permitido: boolean; espera_seg: number };
-    return { permitido: !!fila?.permitido, esperaSeg: Number(fila?.espera_seg ?? 0), clave };
+    r = await rpc("panel_reservar_intento", { p_clave: clave, p_max: MAX_INTENTOS, p_ventana_seg: VENTANA_MS / 1000, p_bloqueo_seg: BLOQUEO_MS / 1000 });
   } catch (e) {
-    // Sin SQL 1.3 o sin base de datos: respaldo en memoria (nunca se entra sin la contraseña correcta)
-    g.__intentosSinSql = true;
-    console.error("Intentos (respaldo en memoria):", (e as Error).message);
-    return { ...reservarEnMemoria(clave), clave };
+    console.error("Intentos: base de datos no disponible:", (e as Error).message);
+    return { permitido: false, clave, esperaSeg: 60, noDisponible: true };
   }
+  if (r.error) {
+    if (r.error.code === "PGRST202") {
+      g.__intentosSinSql = true;
+      const m = reservarEnMemoria(clave);
+      return m.permitido ? { permitido: true, clave, generacion: 0, numero: 0, memoria: true } : { permitido: false, clave, esperaSeg: m.esperaSeg };
+    }
+    console.error("Intentos: base de datos no disponible:", r.error.code, r.error.message);
+    return { permitido: false, clave, esperaSeg: 60, noDisponible: true };
+  }
+  g.__intentosSinSql = false;
+  const fila = (Array.isArray(r.data) ? r.data[0] : r.data) as { permitido: boolean; espera_seg: number; generacion: number; numero: number } | undefined;
+  if (!fila) return { permitido: false, clave, esperaSeg: 60, noDisponible: true };
+  return fila.permitido
+    ? { permitido: true, clave, generacion: Number(fila.generacion), numero: Number(fila.numero), memoria: false }
+    : { permitido: false, clave, esperaSeg: Math.max(1, Number(fila.espera_seg)) };
 }
 
-export async function liberarIntento(clave: string) {
-  liberarEnMemoria(clave);
-  await cliente()
-    .rpc("panel_liberar_intento", { p_clave: clave, p_max: MAX_INTENTOS })
-    .then(
-      () => {},
-      () => {},
-    );
+// S17-B · Contraseña correcta: se devuelve SOLO ese intento (generación + número). Si la ventana ya cambió no toca nada,
+// y devolverlo dos veces no descuenta dos.
+export async function liberarIntento(reserva: Extract<Reserva, { permitido: true }>, rpc: Rpc = rpcReal) {
+  if (reserva.memoria) return liberarEnMemoria(reserva.clave);
+  await Promise.resolve(rpc("panel_liberar_intento", { p_clave: reserva.clave, p_generacion: reserva.generacion, p_numero: reserva.numero, p_max: MAX_INTENTOS })).then(
+    () => {},
+    () => {},
+  );
 }

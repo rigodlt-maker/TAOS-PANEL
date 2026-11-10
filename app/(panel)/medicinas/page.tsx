@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fechaLocal } from "@/lib/fechas";
-import { CADA_HORAS, enlaceGoogle, horarios, leerMedicinas, textoDosis, tomasDelDia, UNIDADES, type Medicina, hora12 } from "@/lib/medicinas";
+import { borradorDeUrl } from "@/lib/parche";
+import { baseDeMedicina, CADA_HORAS, enlaceGoogle, horarios, leerMedicinas, textoDosis, tomasDelDia, UNIDADES, type Medicina, hora12 } from "@/lib/medicinas";
 import { Tarjeta } from "../../componentes";
 import { FotoMedicina } from "../../foto-medicina";
 import { guardarMedicinaForm, marcarTomaHoy, quitarMedicinaForm } from "./acciones";
@@ -8,8 +9,9 @@ import { guardarMedicinaForm, marcarTomaHoy, quitarMedicinaForm } from "./accion
 export const dynamic = "force-dynamic";
 
 // Mis medicinas: qué tomas, cuánto y cada cuántas horas. Palomea cada toma; la app te avisa (con foto) y tu calendario también.
-export default async function Medicinas({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string; editar?: string }> }) {
-  const { error, ok, editar } = await searchParams;
+export default async function Medicinas({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string; editar?: string; borrador?: string }> }) {
+  const { error, ok, editar, borrador } = await searchParams;
+  const escrito = borradorDeUrl(borrador);
   const d = await leerMedicinas();
   const hoy = fechaLocal();
   const dia = tomasDelDia(d, hoy);
@@ -103,7 +105,8 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
 
       <div id="editar">
         <Tarjeta titulo={enEdicion ? `✏️ Editar ${enEdicion.nombre}` : d.lista.length ? "➕ Agregar medicina o suplemento" : "💊 Agrega tu primera medicina"}>
-          <Formulario m={enEdicion} />
+          {escrito && <p className="tenue" style={{ fontSize: 13 }}>Abajo está lo que escribiste. Arriba en tu lista ves cómo quedó guardada.</p>}
+          <Formulario m={enEdicion} escrito={escrito} />
           {enEdicion && (
             <form action={quitarMedicinaForm} style={{ marginTop: 12 }}>
               <input type="hidden" name="id" value={enEdicion.id} />
@@ -122,24 +125,28 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
   );
 }
 
-function Formulario({ m }: { m?: Medicina }) {
+function Formulario({ m: guardada, escrito }: { m?: Medicina; escrito?: Record<string, unknown> | null }) {
+  // Lo que escribiste (si hubo conflicto) se muestra encima de lo guardado; la base siempre es lo guardado AHORA
+  const m = guardada && { ...guardada, ...(escrito as Partial<Medicina> | null) };
+  const v = m ?? (escrito as Partial<Medicina> | null) ?? undefined;
   return (
     <form action={guardarMedicinaForm} className="campos">
-      {m && <input type="hidden" name="id" value={m.id} />}
+      {guardada && <input type="hidden" name="id" value={guardada.id} />}
+      {guardada && <input type="hidden" name="base" value={JSON.stringify(baseDeMedicina(guardada))} />}
       <input type="hidden" name="op" value={randomUUID()} />
-      <FotoMedicina actual={m?.foto ?? null} />
+      <FotoMedicina actual={guardada?.foto ?? null} />
       <label>
         Nombre
-        <input name="nombre" required defaultValue={m?.nombre} placeholder="Ej. Omeprazol 20 mg, Vitamina C, Colágeno" maxLength={60} />
+        <input name="nombre" required defaultValue={v?.nombre} placeholder="Ej. Omeprazol 20 mg, Vitamina C, Colágeno" maxLength={60} />
       </label>
       <div className="dos-columnas">
         <label>
           Cuánto
-          <input name="cantidad" inputMode="decimal" defaultValue={m?.cantidad ?? 1} />
+          <input name="cantidad" inputMode="decimal" defaultValue={v?.cantidad ?? 1} />
         </label>
         <label>
           De qué
-          <select name="unidad" defaultValue={m?.unidad ?? "pastilla"}>
+          <select name="unidad" defaultValue={v?.unidad ?? "pastilla"}>
             {UNIDADES.map((u) => (
               <option key={u}>{u}</option>
             ))}
@@ -149,7 +156,7 @@ function Formulario({ m }: { m?: Medicina }) {
       <div className="dos-columnas">
         <label>
           Cada cuántas horas
-          <select name="cadaHoras" defaultValue={m?.cadaHoras ?? 24}>
+          <select name="cadaHoras" defaultValue={v?.cadaHoras ?? 24}>
             {CADA_HORAS.map((h) => (
               <option key={h} value={h}>
                 {h === 24 ? "1 vez al día" : `cada ${h} h`}
@@ -159,15 +166,15 @@ function Formulario({ m }: { m?: Medicina }) {
         </label>
         <label>
           Primera toma
-          <input type="time" name="primera" defaultValue={m?.primera ?? "08:00"} required />
+          <input type="time" name="primera" defaultValue={v?.primera ?? "08:00"} required />
         </label>
       </div>
       <label>
         Nota (opcional)
-        <input name="nota" defaultValue={m?.nota} placeholder="Con alimentos, en ayunas, por 7 días…" maxLength={80} />
+        <input name="nota" defaultValue={v?.nota} placeholder="Con alimentos, en ayunas, por 7 días…" maxLength={80} />
       </label>
       <button type="submit" className="boton">
-        {m ? "Guardar cambios" : "Agregar"}
+        {guardada ? "Guardar cambios" : "Agregar"}
       </button>
     </form>
   );

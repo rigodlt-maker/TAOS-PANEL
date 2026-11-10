@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { limpiarAuto } from "@/lib/no-circula";
+import { borradorAUrl, ConflictoDeCampos, leerBase } from "@/lib/parche";
 import { buscarCiudad, CIUDAD_BASE, guardarPreferencias, preferencias } from "@/lib/preferencias";
 
 // Guarda nombre, ciudad y lugares; la ciudad se ubica sola para el clima
 export async function guardarAjustes(f: FormData) {
   let destino = "/ajustes?ok=1";
+  let borrador = "";
   try {
     const antes = await preferencias();
     const texto = (c: string) => String(f.get(c) ?? "").trim();
@@ -21,10 +23,11 @@ export async function guardarAjustes(f: FormData) {
       .map((nombre, i) => ({ nombre: nombre.trim().slice(0, 40), icono: (iconos[i] || "📍").trim().slice(0, 8), direccion: (direcciones[i] ?? "").trim().slice(0, 300) }))
       .filter((l) => l.nombre && l.direccion);
     const auto = limpiarAuto({ terminacion: texto("auto_terminacion") === "" ? NaN : Number(texto("auto_terminacion")), holograma: texto("auto_holograma") });
-    await guardarPreferencias({ nombre: texto("nombre").slice(0, 40), ciudad, lugares, auto });
+    borrador = borradorAUrl({ nombre: texto("nombre"), ciudad: nombreCiudad, lugares, auto });
+    await guardarPreferencias({ nombre: texto("nombre").slice(0, 40), ciudad, lugares, auto }, leerBase(f.get("base")), nombreCiudad);
     revalidatePath("/", "layout");
   } catch (e) {
-    destino = `/ajustes?error=${encodeURIComponent(e instanceof Error ? e.message : String(e))}`;
+    destino = `/ajustes?error=${encodeURIComponent(e instanceof Error ? e.message : String(e))}${e instanceof ConflictoDeCampos && borrador ? `&borrador=${borrador}` : ""}`;
   }
   redirect(destino);
 }

@@ -8,6 +8,7 @@ import { DESFASE, ZONA } from "./config";
 import { esDemo } from "./demo";
 import { fechaLocal, sumarDias } from "./fechas";
 import { guardarDatos, type Operacion } from "./guardar";
+import { ConflictoDeCampos, parche } from "./parche";
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export const UNIDADES = ["pastilla", "cápsula", "tableta", "sobre", "cucharada", "cucharadita", "gotas", "ml", "inyección", "parche", "toma"] as const;
@@ -104,6 +105,26 @@ export function guardarMedicina(d: Medicinas, m: Omit<Medicina, "id"> & { id?: s
   const existe = d.lista.some((x) => x.id === limpia.id);
   if (!existe && d.lista.length >= MAX) return d;
   return { ...d, lista: existe ? d.lista.map((x) => (x.id === limpia.id ? limpia : x)) : [...d.lista, limpia] };
+}
+
+// S14-B1 · Crear y editar van separados: editar una medicina que ya no existe NO la vuelve a crear, y solo se
+// cambian los campos que tocaste (comparados con cómo estaban cuando abriste la pantalla).
+export const CAMPOS_MEDICINA = ["nombre", "cantidad", "unidad", "cadaHoras", "primera", "nota"] as const;
+type CamposMedicina = Pick<Medicina, (typeof CAMPOS_MEDICINA)[number]>;
+const NOMBRES_CAMPOS: Record<string, string> = { nombre: "el nombre", cantidad: "la cantidad", unidad: "la unidad", cadaHoras: "cada cuántas horas", primera: "la hora de la primera toma", nota: "la nota" };
+export const baseDeMedicina = (m: CamposMedicina): CamposMedicina => ({ nombre: m.nombre, cantidad: m.cantidad, unidad: m.unidad, cadaHoras: m.cadaHoras, primera: m.primera, nota: m.nota });
+
+export function agregarMedicina(d: Medicinas, m: Omit<Medicina, "id">, id = `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`): Medicinas {
+  return guardarMedicina(d, { ...m, id });
+}
+
+export function editarMedicina(d: Medicinas, id: string, base: Record<string, unknown> | null, enviado: CamposMedicina, foto?: string | null): Medicinas {
+  const actual = d.lista.find((x) => x.id === id);
+  if (!actual) throw new ConflictoDeCampos("Esa medicina ya no está en tu lista (se quitó en otra pantalla). Si la quieres de nuevo, agrégala como nueva.", ["id"]);
+  const limpio = limpiarMedicinas({ lista: [{ ...actual, ...enviado }] }).lista[0] ?? actual;
+  const cambios = parche(baseDeMedicina(actual), base, baseDeMedicina(limpio), NOMBRES_CAMPOS);
+  const nueva = { ...actual, ...cambios, foto: foto === undefined ? actual.foto : foto };
+  return { ...d, lista: d.lista.map((x) => (x.id === id ? nueva : x)) };
 }
 
 export const quitarMedicina = (d: Medicinas, id: string): Medicinas => limpiarMedicinas({ ...d, lista: d.lista.filter((m) => m.id !== id) });
@@ -205,7 +226,18 @@ function demo(): Medicinas {
   return g.__medicinasDemo;
 }
 
-// Sin la memoria de una misma página (el despertador vuelve a leer justo antes de mandar)
+// S14-C2 · Para decidir avisos: si no se puede leer, es un ERROR (nunca "no hay medicinas"). Así un fallo de Supabase
+// no se confunde con "la quitaste" y no se cancela ningún aviso.
+export class LecturaFallida extends Error {}
+export async function leerMedicinasEstricto(): Promise<Medicinas> {
+  if (esDemo()) return demo();
+  if (!pushConfigurado()) throw new LecturaFallida("sin base de datos");
+  const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
+  if (error) throw new LecturaFallida(error.message);
+  return limpiarMedicinas((data?.datos as { medicinas?: unknown } | null)?.medicinas);
+}
+
+// Para las pantallas (sin la memoria de una misma página)
 export async function leerMedicinasDirecto(): Promise<Medicinas> {
   if (esDemo()) return demo();
   if (!pushConfigurado()) return VACIO;

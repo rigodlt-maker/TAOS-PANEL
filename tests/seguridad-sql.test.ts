@@ -56,8 +56,8 @@ test("S17: 20 intentos al mismo tiempo: solo pasan 5 a revisar la contraseña; e
   assert.ok(r.filter((x) => !x!.permitido).every((x) => x!.espera_seg > 880 && x!.espera_seg <= 900));
   // Otra dirección no se bloquea (el dueño no queda fuera por un ataque desde otro lado)
   assert.equal((await uno<{ permitido: boolean }>(db, "select * from panel_reservar_intento('ip-2')"))!.permitido, true);
-  // Contraseña correcta en ip-2: devuelve solo su intento
-  await db.query("select panel_liberar_intento('ip-2')");
+  // Contraseña correcta en ip-2: devuelve solo su intento (generación 0, intento 1)
+  await db.query("select panel_liberar_intento('ip-2', 0, 1)");
   assert.equal(Number((await uno<{ fallos: number }>(db, "select fallos from panel_intentos where clave = 'ip-2'"))!.fallos), 0);
 });
 

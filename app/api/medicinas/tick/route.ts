@@ -4,7 +4,9 @@ import { origenCanonico, verificarTick } from "@/lib/tick-firma";
 
 export const dynamic = "force-dynamic";
 
-const SIN_CACHE = { "Cache-Control": "no-store" };
+// x-taos-tick: le dice al servidor de TAOS que esta instalación ya es la firmada (1.3): desde ese momento nunca más la
+// llama con el GET de antes, aunque falle la firma, falte la llave o conteste 405 (S14-D1)
+const SIN_CACHE = { "Cache-Control": "no-store", "x-taos-tick": "v1" };
 
 // S14: el despertador ya no se puede llamar abierto. Solo POST firmado por el servidor de TAOS (ver lib/tick-firma.ts).
 export function GET() {

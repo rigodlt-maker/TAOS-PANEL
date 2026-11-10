@@ -39,17 +39,40 @@ drop policy if exists "Solo el dueño" on public.panel_config;
 alter table public.panel_config add column if not exists version bigint not null default 0;
 grant select, insert, update, delete on public.panel_config to service_role;
 
+-- S14-B2 · Ya instalado 1.3, ningún guardado puede escribir tus ajustes sin pasar por panel_guardar (que sube la
+-- versión). Una pestaña o un servidor con la versión anterior de la app recibe un error y NO pisa lo que hay.
+create or replace function public.panel_config_proteger() returns trigger
+language plpgsql security invoker set search_path = '' as $$
+begin
+  if new.datos is distinct from old.datos and new.version = old.version then
+    raise exception 'TAOS_VERSION_ANTERIOR: este guardado viene de una versión anterior de la app; recarga la página'
+      using errcode = 'P0001';
+  end if;
+  return new;
+end $$;
+drop trigger if exists panel_config_proteger on public.panel_config;
+create trigger panel_config_proteger before update on public.panel_config for each row execute function public.panel_config_proteger();
+
 -- S03 · La conexión con Google, en su propia tabla (ya no junto con tus ajustes)
 create table if not exists public.panel_google (
   user_id uuid primary key references auth.users (id) on delete cascade,
   refresh_token text not null,
   updated_at timestamptz not null default now()
 );
+alter table public.panel_google add column if not exists refresh_anterior text;
+-- S03-R · Si ya había conexión en panel_google y la columna vieja trae OTRA, esa la escribió una versión anterior de la
+-- app DESPUÉS de mudarla (la mudanza deja la columna vacía): es la más nueva. Queda como principal y la otra se guarda
+-- como anterior (la app la prueba si Google rechaza la principal). No se pierde ninguna.
+update public.panel_google g set refresh_anterior = g.refresh_token, refresh_token = c.google_refresh_token, updated_at = now()
+  from public.panel_config c
+  where c.user_id = g.user_id and c.google_refresh_token is not null and c.google_refresh_token <> g.refresh_token;
 insert into public.panel_google (user_id, refresh_token)
   select user_id, google_refresh_token from public.panel_config where google_refresh_token is not null
   on conflict (user_id) do nothing;
+-- La columna vieja solo se vacía cuando ese mismo token ya quedó guardado en panel_google
 update public.panel_config c set google_refresh_token = null
-  where c.google_refresh_token is not null and exists (select 1 from public.panel_google g where g.user_id = c.user_id);
+  where c.google_refresh_token is not null
+    and exists (select 1 from public.panel_google g where g.user_id = c.user_id and g.refresh_token = c.google_refresh_token);
 
 -- S17 · Intentos de contraseña: un solo contador para todos los servidores (clave = huella de instalación + dirección,
 -- nunca la dirección en claro)
@@ -60,6 +83,9 @@ create table if not exists public.panel_intentos (
   bloqueado_hasta timestamptz,
   actualizado timestamptz not null default now()
 );
+-- S17-B · Cada ventana de 15 minutos tiene su número (generación); cada intento, el suyo dentro de la ventana
+alter table public.panel_intentos add column if not exists generacion bigint not null default 0;
+alter table public.panel_intentos add column if not exists liberados integer[] not null default '{}';
 
 -- S14 · Guardados que no se pisan: cada guardado queda anotado (si se repite, no se aplica dos veces)
 create table if not exists public.panel_operaciones (
@@ -102,11 +128,20 @@ create table if not exists public.panel_medicina_avisos (
   actualizado timestamptz not null default now(),
   primary key (user_id, medicina_id, revision, fecha, hora, dispositivo)
 );
+-- S14-C3 · Hora real de la toma: la cola de reintentos se revisa sola (no depende de volver a "descubrir" la toma)
+alter table public.panel_medicina_avisos add column if not exists toma_en timestamptz;
+create index if not exists panel_medicina_avisos_cola on public.panel_medicina_avisos (user_id, estado, proximo);
+
+-- S14-C3 · Mantenimiento: la limpieza diaria va por tiempo transcurrido, no por el número del turno
+create table if not exists public.panel_mantenimiento (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  ultima_limpieza timestamptz not null default 'epoch'
+);
 
 do $$
 declare t text;
 begin
-  foreach t in array array['panel_google', 'panel_intentos', 'panel_operaciones', 'panel_tick_ejecuciones', 'panel_medicina_avisos'] loop
+  foreach t in array array['panel_google', 'panel_intentos', 'panel_operaciones', 'panel_tick_ejecuciones', 'panel_medicina_avisos', 'panel_mantenimiento'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('revoke all on public.%I from public, anon, authenticated', t);
     execute format('grant select, insert, update, delete on public.%I to service_role', t);
@@ -115,35 +150,41 @@ begin
 end $$;
 
 -- S17 · Apartar un intento ANTES de revisar la contraseña (atómico). Política: hasta 5 intentos por ventana de
--- 15 minutos; al 5º se bloquea 15 minutos contados desde ese 5º. Devuelve si se permite y cuántos segundos esperar.
-create or replace function public.panel_reservar_intento(p_clave text, p_max integer default 5, p_ventana_seg integer default 900, p_bloqueo_seg integer default 900)
-returns table (permitido boolean, espera_seg integer)
+-- 15 minutos; al 5º se bloquea 15 minutos contados desde ese 5º. Devuelve si se permite, cuántos segundos esperar y
+-- qué intento es (generación de la ventana + número), para devolver después SOLO ese intento.
+drop function if exists public.panel_reservar_intento(text, integer, integer, integer);
+create function public.panel_reservar_intento(p_clave text, p_max integer default 5, p_ventana_seg integer default 900, p_bloqueo_seg integer default 900)
+returns table (permitido boolean, espera_seg integer, generacion bigint, numero integer)
 language plpgsql security invoker set search_path = '' as $$
 declare r public.panel_intentos;
 begin
   insert into public.panel_intentos (clave) values (p_clave) on conflict (clave) do nothing;
   select * into r from public.panel_intentos i where i.clave = p_clave for update;
   if r.bloqueado_hasta is not null and r.bloqueado_hasta > now() then
-    return query select false, greatest(1, ceil(extract(epoch from r.bloqueado_hasta - now()))::integer);
+    return query select false, greatest(1, ceil(extract(epoch from r.bloqueado_hasta - now()))::integer), r.generacion, 0;
     return;
   end if;
   if r.bloqueado_hasta is not null or r.ventana_desde < now() - make_interval(secs => p_ventana_seg) then
-    r.fallos := 0; r.ventana_desde := now(); r.bloqueado_hasta := null;
+    r.fallos := 0; r.ventana_desde := now(); r.bloqueado_hasta := null; r.generacion := r.generacion + 1; r.liberados := '{}';
   end if;
   r.fallos := r.fallos + 1;
   if r.fallos >= p_max then r.bloqueado_hasta := now() + make_interval(secs => p_bloqueo_seg); end if;
-  update public.panel_intentos i set fallos = r.fallos, ventana_desde = r.ventana_desde, bloqueado_hasta = r.bloqueado_hasta, actualizado = now()
+  update public.panel_intentos i set fallos = r.fallos, ventana_desde = r.ventana_desde, bloqueado_hasta = r.bloqueado_hasta,
+    generacion = r.generacion, liberados = r.liberados, actualizado = now()
     where i.clave = p_clave;
-  return query select true, 0;
+  return query select true, 0, r.generacion, r.fallos;
 end $$;
 
--- S17 · Contraseña correcta: se devuelve solo el intento propio (no borra los que otros apartaron al mismo tiempo)
-create or replace function public.panel_liberar_intento(p_clave text, p_max integer default 5)
-returns void language plpgsql security invoker set search_path = '' as $$
+-- S17 · Contraseña correcta: se devuelve solo ESE intento, solo si sigue siendo de la ventana vigente y una sola vez
+-- (si la ventana ya cambió, no toca el contador nuevo)
+drop function if exists public.panel_liberar_intento(text, integer);
+create or replace function public.panel_liberar_intento(p_clave text, p_generacion bigint, p_numero integer, p_max integer default 5)
+returns boolean language plpgsql security invoker set search_path = '' as $$
 begin
-  update public.panel_intentos i set fallos = greatest(i.fallos - 1, 0),
+  update public.panel_intentos i set fallos = greatest(i.fallos - 1, 0), liberados = i.liberados || p_numero,
     bloqueado_hasta = case when greatest(i.fallos - 1, 0) < p_max then null else i.bloqueado_hasta end, actualizado = now()
-    where i.clave = p_clave;
+    where i.clave = p_clave and i.generacion = p_generacion and p_numero > 0 and not (p_numero = any (i.liberados));
+  return found;
 end $$;
 
 -- S14 · Guardar sin pisar: bloquea tu fila, revisa que nadie la cambió desde que la leíste (versión) y mezcla solo
@@ -205,24 +246,32 @@ begin
   return found;
 end $$;
 
--- S14 · Apartar avisos (toma × celular) antes de mandarlos. Solo se apartan los pendientes cuyo reintento ya toca,
--- o los apartados por una revisión que se cayó (ficha vencida). Nunca dos revisiones el mismo aviso a la vez.
-create or replace function public.panel_avisos_reclamar(p_usuario uuid, p_items jsonb, p_token uuid, p_lease_seg integer default 120, p_max_intentos integer default 8)
+-- S14 · Apartar avisos (toma × celular) antes de mandarlos. Se anotan TODAS las tomas que tocan (sin recortar) y se
+-- aparta un lote de la cola: pendientes cuyo reintento ya toca o apartados por una revisión que se cayó (ficha vencida),
+-- en orden estable, aunque ya no aparezcan entre las tomas de ahora. Nunca dos revisiones el mismo aviso a la vez.
+-- Pasadas p_horizonte_seg desde la toma, o agotados los intentos, el aviso se da por perdido ('vencido' / 'agotado').
+drop function if exists public.panel_avisos_reclamar(uuid, jsonb, uuid, integer, integer);
+create or replace function public.panel_avisos_reclamar(p_usuario uuid, p_items jsonb, p_token uuid, p_lease_seg integer default 120,
+  p_max_intentos integer default 8, p_limite integer default 40, p_horizonte_seg integer default 21600)
 returns setof public.panel_medicina_avisos language plpgsql security invoker set search_path = '' as $$
 begin
-  insert into public.panel_medicina_avisos (user_id, medicina_id, revision, fecha, hora, dispositivo)
-    select p_usuario, x->>'medicina_id', x->>'revision', (x->>'fecha')::date, x->>'hora', x->>'dispositivo'
-    from jsonb_array_elements(p_items) x
+  insert into public.panel_medicina_avisos (user_id, medicina_id, revision, fecha, hora, dispositivo, toma_en)
+    select p_usuario, x->>'medicina_id', x->>'revision', (x->>'fecha')::date, x->>'hora', x->>'dispositivo', (x->>'toma_en')::timestamptz
+    from jsonb_array_elements(coalesce(p_items, '[]')) x
     on conflict do nothing;
+  update public.panel_medicina_avisos a set estado = case when a.intentos >= p_max_intentos then 'agotado' else 'vencido' end,
+      lease_token = null, lease_hasta = null, actualizado = now()
+    where a.user_id = p_usuario
+      and (a.estado = 'pendiente' or (a.estado = 'reservado' and a.lease_hasta < now()))
+      and (a.intentos >= p_max_intentos or a.toma_en < now() - make_interval(secs => p_horizonte_seg));
   return query
   with candidatos as (
     select a.medicina_id, a.revision, a.fecha, a.hora, a.dispositivo
     from public.panel_medicina_avisos a
-    join jsonb_array_elements(p_items) x
-      on a.medicina_id = x->>'medicina_id' and a.revision = x->>'revision' and a.fecha = (x->>'fecha')::date
-      and a.hora = x->>'hora' and a.dispositivo = x->>'dispositivo'
-    where a.user_id = p_usuario and a.intentos < p_max_intentos
+    where a.user_id = p_usuario
       and ((a.estado = 'pendiente' and a.proximo <= now()) or (a.estado = 'reservado' and a.lease_hasta < now()))
+    order by a.proximo, a.toma_en nulls last, a.medicina_id, a.dispositivo
+    limit greatest(p_limite, 0)
     for update of a skip locked
   )
   update public.panel_medicina_avisos a set estado = 'reservado', lease_token = p_token,
@@ -240,7 +289,7 @@ returns integer language plpgsql security invoker set search_path = '' as $$
 declare n integer;
 begin
   update public.panel_medicina_avisos a set estado = x->>'estado',
-    proximo = case when x->>'estado' = 'pendiente' then now() + interval '15 minutes' else a.proximo end,
+    proximo = case when x->>'estado' = 'pendiente' then now() + make_interval(secs => coalesce((x->>'espera_seg')::integer, 900)) else a.proximo end,
     lease_token = null, lease_hasta = null, actualizado = now()
   from jsonb_array_elements(p_resultados) x
   where a.user_id = p_usuario and a.lease_token = p_token and a.medicina_id = x->>'medicina_id' and a.revision = x->>'revision'
@@ -250,15 +299,25 @@ begin
   return n;
 end $$;
 
+-- S14-C3 · ¿Toca la limpieza diaria? Sí si pasaron p_horas desde la última; una sola revisión la gana (atómico)
+create or replace function public.panel_limpieza_toca(p_usuario uuid, p_horas integer default 24)
+returns boolean language plpgsql security invoker set search_path = '' as $$
+begin
+  insert into public.panel_mantenimiento (user_id) values (p_usuario) on conflict (user_id) do nothing;
+  update public.panel_mantenimiento m set ultima_limpieza = now()
+    where m.user_id = p_usuario and m.ultima_limpieza < now() - make_interval(hours => p_horas);
+  return found;
+end $$;
+
 -- Las funciones solo las puede usar el servidor
 do $$
 declare f text;
 begin
   foreach f in array array[
-    'panel_reservar_intento(text, integer, integer, integer)', 'panel_liberar_intento(text, integer)',
+    'panel_reservar_intento(text, integer, integer, integer)', 'panel_liberar_intento(text, bigint, integer, integer)',
     'panel_guardar(uuid, bigint, jsonb, text, text)', 'panel_tick_reclamar(uuid, bigint, text, integer, integer)',
-    'panel_tick_terminar(uuid, bigint, uuid, text, text)', 'panel_avisos_reclamar(uuid, jsonb, uuid, integer, integer)',
-    'panel_avisos_acusar(uuid, uuid, jsonb)'] loop
+    'panel_tick_terminar(uuid, bigint, uuid, text, text)', 'panel_avisos_reclamar(uuid, jsonb, uuid, integer, integer, integer, integer)',
+    'panel_avisos_acusar(uuid, uuid, jsonb)', 'panel_limpieza_toca(uuid, integer)', 'panel_config_proteger()'] loop
     execute format('revoke all on function public.%s from public, anon, authenticated', f);
     execute format('grant execute on function public.%s to service_role', f);
   end loop;

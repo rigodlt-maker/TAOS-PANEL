@@ -3,6 +3,7 @@
 import { cache } from "react";
 import { limpiarAuto, type MiAuto } from "./no-circula";
 import { guardarDatos } from "./guardar";
+import { parche } from "./parche";
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export type Lugar = { nombre: string; icono: string; direccion: string };
@@ -40,9 +41,21 @@ export const preferencias = cache(async (): Promise<Preferencias> => {
   }
 });
 
-// Solo cambia nombre, ciudad, lugares y auto; lo demás (hábitos, medicinas) se queda como está (S14-B)
-export async function guardarPreferencias(p: Omit<Preferencias, "configurado">) {
-  await guardarDatos(() => ({ nombre: p.nombre, ciudad: p.ciudad, lugares: p.lugares, auto: p.auto }));
+// S14-B1 · Cómo estaban los campos al abrir Ajustes (va escondido en el formulario)
+type Comparable = { nombre: string; ciudad: string; lugares: Lugar[]; auto: MiAuto | null };
+export const baseDePreferencias = (p: Preferencias): Comparable => ({ nombre: p.nombre, ciudad: p.configurado ? p.ciudad.nombre : "", lugares: p.lugares, auto: p.auto });
+const NOMBRES = { nombre: "tu nombre", ciudad: "tu ciudad", lugares: "tus lugares", auto: "tu auto" };
+
+// Solo cambia lo que tocaste de nombre, ciudad, lugares y auto; lo demás (hábitos, medicinas) se queda como está
+// (S14-B). Si otra pantalla cambió lo mismo que tú mientras editabas, no se guarda nada (conflicto).
+export async function guardarPreferencias(p: Omit<Preferencias, "configurado">, base: Record<string, unknown> | null, ciudadEscrita: string) {
+  await guardarDatos((datos) => {
+    const v = limpiar(datos);
+    const actual: Comparable = { nombre: v.nombre, ciudad: (datos as { ciudad?: unknown }).ciudad ? v.ciudad.nombre : "", lugares: v.lugares, auto: v.auto };
+    const enviado = limpiar({ nombre: p.nombre, ciudad: p.ciudad, lugares: p.lugares, auto: p.auto });
+    const c = parche(actual, base, { nombre: enviado.nombre, ciudad: ciudadEscrita, lugares: enviado.lugares, auto: enviado.auto }, NOMBRES);
+    return { ...c, ...("ciudad" in c ? { ciudad: p.ciudad } : {}) };
+  });
 }
 
 // Busca la ciudad en el servicio gratuito de Open-Meteo (sin llave) para ubicar el clima

@@ -1,6 +1,6 @@
 import { correosDemo, esDemo, eventosDemo, tareasDemo, TOKEN_DEMO } from "./demo";
 import { ZONA } from "./config";
-import { googleConfigurado, refreshGuardado } from "./google-cuenta";
+import { googleConfigurado, promoverAnterior, tokensGuardados } from "./google-cuenta";
 import { rangoDelDia } from "./fechas";
 import { decodificarEntidades } from "./texto";
 
@@ -10,23 +10,29 @@ function variable(nombre: string): string {
   return valor;
 }
 
+const pedirAcceso = (refresh: string) =>
+  fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: variable("GOOGLE_CLIENT_ID"), client_secret: variable("GOOGLE_CLIENT_SECRET"), refresh_token: refresh, grant_type: "refresh_token" }),
+    cache: "no-store",
+  });
+
 // Cambia el Refresh token por un token de acceso temporal (dura ~1 hora)
 export async function tokenDeAcceso(): Promise<string> {
   if (esDemo()) return TOKEN_DEMO;
   if (!googleConfigurado()) throw new Error("Falta conectar Google: sigue el anexo de Google de la guía (Más › Conectar con Google).");
-  const refresh = await refreshGuardado();
-  if (!refresh) throw new Error("Falta conectar tu cuenta de Google: entra a Más y toca «Conectar con Google».");
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: variable("GOOGLE_CLIENT_ID"),
-      client_secret: variable("GOOGLE_CLIENT_SECRET"),
-      refresh_token: refresh,
-      grant_type: "refresh_token",
-    }),
-    cache: "no-store",
-  });
+  const { principal, anterior } = await tokensGuardados();
+  if (!principal) throw new Error("Falta conectar tu cuenta de Google: entra a Más y toca «Conectar con Google».");
+  let res = await pedirAcceso(principal);
+  // S03-R · Si Google ya no acepta la principal y hay una anterior guardada por la mudanza, se prueba esa
+  if (!res.ok && anterior && anterior !== principal) {
+    const otra = await pedirAcceso(anterior);
+    if (otra.ok) {
+      res = otra;
+      await promoverAnterior(anterior);
+    }
+  }
   if (!res.ok) {
     // Google explica el motivo en "error" (por ejemplo invalid_client o invalid_grant); no incluye secretos
     const detalle = (await res.json().catch(() => ({}))) as { error?: string; error_description?: string };

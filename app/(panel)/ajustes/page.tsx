@@ -1,15 +1,21 @@
 import { estadoDespertador } from "@/lib/despertador";
 import { esDemo } from "@/lib/demo";
-import { preferencias } from "@/lib/preferencias";
+import { borradorDeUrl } from "@/lib/parche";
+import { baseDePreferencias, preferencias, type Preferencias } from "@/lib/preferencias";
 import { Tarjeta } from "../../componentes";
 import { guardarAjustes } from "./acciones";
 import { Lugares } from "./lugares";
 
 export const dynamic = "force-dynamic";
 
-export default async function Ajustes({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
-  const { ok, error } = await searchParams;
-  const p = await preferencias();
+export default async function Ajustes({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string; borrador?: string }> }) {
+  const { ok, error, borrador } = await searchParams;
+  const guardadas = await preferencias();
+  // Conflicto: se muestra lo que escribiste; la base escondida es lo guardado AHORA
+  const escrito = borradorDeUrl(borrador) as { nombre?: string; ciudad?: string; lugares?: Preferencias["lugares"]; auto?: Preferencias["auto"] } | null;
+  const p: Preferencias = escrito
+    ? { ...guardadas, nombre: escrito.nombre ?? guardadas.nombre, ciudad: { ...guardadas.ciudad, nombre: escrito.ciudad ?? guardadas.ciudad.nombre }, lugares: escrito.lugares ?? guardadas.lugares, auto: escrito.auto ?? null, configurado: true }
+    : guardadas;
   const despertador = esDemo() ? null : await estadoDespertador();
   return (
     <div className="pila">
@@ -36,6 +42,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         </p>
       )}
       <form action={guardarAjustes} className="pila">
+        <input type="hidden" name="base" value={JSON.stringify(baseDePreferencias(guardadas))} />
         <Tarjeta titulo="👋 Tú">
           <div className="campos">
             <label>
