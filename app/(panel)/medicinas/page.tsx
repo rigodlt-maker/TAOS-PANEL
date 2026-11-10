@@ -62,7 +62,8 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
             📅 Agregar todas a mi calendario
           </a>
           <p className="tenue" style={{ fontSize: 14, marginTop: 12 }}>
-            1) Activa las notificaciones en Menú: te llega el aviso con la foto y el botón “Ya me la tomé”. 2) Además, agrega las alarmas a tu calendario: suenan aunque no
+            1) Activa las notificaciones en Menú: te llega el aviso con la foto y el botón “Ya me la tomé”, normalmente en los 15 minutos siguientes a la hora de la toma (si
+            hay muchas apps TAOS instaladas puede tardar un poco más). 2) Además, agrega las alarmas a tu calendario: suenan a la hora exacta y aunque no
             tengas internet.
           </p>
           <details style={{ marginTop: 12 }}>
@@ -105,7 +106,7 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
 
       <div id="editar">
         <Tarjeta titulo={enEdicion ? `✏️ Editar ${enEdicion.nombre}` : d.lista.length ? "➕ Agregar medicina o suplemento" : "💊 Agrega tu primera medicina"}>
-          {escrito && <p className="tenue" style={{ fontSize: 13 }}>Abajo está lo que escribiste. Arriba en tu lista ves cómo quedó guardada.</p>}
+          {escrito && <LoQueEscribiste escrito={escrito} />}
           <Formulario m={enEdicion} escrito={escrito} />
           {enEdicion && (
             <form action={quitarMedicinaForm} style={{ marginTop: 12 }}>
@@ -121,6 +122,23 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
       <p className="tenue" style={{ fontSize: 13, textAlign: "center" }}>
         Esto es un recordatorio, no una indicación médica: sigue siempre lo que te dijo tu médico.
       </p>
+    </div>
+  );
+}
+
+// Conflicto: lo que escribiste, a la vista y seleccionable para copiarlo (el formulario de abajo ya lo trae puesto)
+function LoQueEscribiste({ escrito }: { escrito: Record<string, unknown> }) {
+  const e = escrito as Partial<Record<"nombre" | "cantidad" | "unidad" | "cadaHoras" | "primera" | "nota", string | number>>;
+  const renglones = [
+    e.nombre && `Nombre: ${e.nombre}`,
+    e.cantidad && `Cuánto: ${e.cantidad} ${e.unidad ?? ""}`.trim(),
+    e.cadaHoras && `Cada ${e.cadaHoras} h · primera toma ${e.primera ?? ""}`.trim(),
+    e.nota && `Nota: ${e.nota}`,
+  ].filter(Boolean);
+  return (
+    <div className="aviso" style={{ marginTop: 0 }}>
+      <p style={{ margin: 0 }}>Abajo está lo que escribiste:</p>
+      <pre style={{ whiteSpace: "pre-wrap", userSelect: "all", margin: "8px 0 0", font: "inherit" }}>{renglones.join("\n")}</pre>
     </div>
   );
 }

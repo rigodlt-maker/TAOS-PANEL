@@ -28,12 +28,11 @@ export async function POST(req: Request) {
 }
 
 // S17 · 429 (o 503 si la base de datos no responde) con una página en español, botón para volver y Retry-After
-function pantallaEspera(segundos: number, noDisponible: boolean) {
+export function pantallaEspera(segundos: number, noDisponible: boolean) {
   const minutos = Math.max(1, Math.ceil(segundos / 60));
-  const titulo = noDisponible ? "No se pudo revisar tu contraseña" : "Demasiados intentos";
-  const texto = noDisponible
-    ? "Tu base de datos no respondió y, por seguridad, no se revisó la contraseña. Espera un minuto y vuelve a intentarlo."
-    : `Por seguridad, espera ${minutos} ${minutos === 1 ? "minuto" : "minutos"} antes de volver a intentar.`;
+  // Texto de Chuu (10 nov 2026), el mismo para 429 y 503; los minutos solo cuando es por intentos
+  const titulo = "Espera un momento";
+  const texto = `Estamos atendiendo muchas solicitudes. Espera un momento y vuelve a intentar${noDisponible ? "" : ` (unos ${minutos} ${minutos === 1 ? "minuto" : "minutos"})`}.`;
   const html = `<!doctype html><html lang="es-MX"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titulo}</title>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;color:#f2f2f2;font:17px/1.5 system-ui,sans-serif;padding:16px}
 main{background:#151515;border:1px solid #2a2a2a;border-radius:20px;padding:28px;max-width:420px;display:grid;gap:14px}h1{margin:0;font-size:22px}p{margin:0;color:#bbb}

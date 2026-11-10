@@ -41,6 +41,20 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
           {despertador.ultima.detalle ? ` · ${despertador.ultima.detalle}` : ""}. «Aceptado» quiere decir que el servicio de notificaciones lo recibió.
         </p>
       )}
+      {escrito && (
+        <div className="aviso">
+          <p style={{ margin: 0 }}>Abajo está lo que escribiste:</p>
+          <pre style={{ whiteSpace: "pre-wrap", userSelect: "all", margin: "8px 0 0", font: "inherit" }}>
+            {[
+              escrito.nombre !== undefined && `Nombre: ${escrito.nombre}`,
+              escrito.ciudad !== undefined && `Ciudad: ${escrito.ciudad}`,
+              ...(escrito.lugares ?? []).map((l) => `${l.icono} ${l.nombre}: ${l.direccion}`),
+            ]
+              .filter(Boolean)
+              .join("\n")}
+          </pre>
+        </div>
+      )}
       <form action={guardarAjustes} className="pila">
         <input type="hidden" name="base" value={JSON.stringify(baseDePreferencias(guardadas))} />
         <Tarjeta titulo="👋 Tú">
