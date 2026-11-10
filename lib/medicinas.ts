@@ -164,7 +164,9 @@ export function calendarioIcs(d: Medicinas, hoy = fechaLocal()): string {
 // Enlace "Agregar a Google Calendar" de una toma (evento diario que se repite)
 export function enlaceGoogle(m: Medicina, h: string, hoy = fechaLocal()) {
   const inicio = `${hoy.replaceAll("-", "")}T${h.replace(":", "")}00`;
-  const fin = `${hoy.replaceAll("-", "")}T${aHora(minutos(h) + 10).replace(":", "")}00`;
+  // Dura 10 minutos; si pasa de medianoche, termina al día siguiente
+  const finMin = minutos(h) + 10;
+  const fin = `${(finMin >= 24 * 60 ? sumarDias(hoy, 1) : hoy).replaceAll("-", "")}T${aHora(finMin % (24 * 60)).replace(":", "")}00`;
   const q = new URLSearchParams({
     action: "TEMPLATE",
     text: `💊 ${m.nombre} · ${textoDosis(m)}`,

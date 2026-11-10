@@ -38,7 +38,10 @@ test("aviso de la noche: lo de mañana y si empieza temprano", () => {
 
 test("sin Supabase configurado no intenta enviar", async () => {
   delete process.env.SUPABASE_SECRET_KEY;
-  assert.deepEqual(await enviarPush({ titulo: "x", cuerpo: "y" }), { enviados: 0, fallidos: 0 });
+  assert.deepEqual(await enviarPush({ titulo: "x", cuerpo: "y" }), { enviados: 0, fallidos: 0, aceptados: [0] });
+  // S08: sin llaves ni celulares, ningún aviso cuenta como entregado (las medicinas se reintentan)
+  const siete = Array.from({ length: 7 }, (_, i) => ({ titulo: `m${i}`, cuerpo: "" }));
+  assert.deepEqual((await enviarPush(siete, siete.length)).aceptados, [0, 0, 0, 0, 0, 0, 0]);
 });
 
 test("la URL de Supabase se limpia aunque se haya copiado con ruta", () => {

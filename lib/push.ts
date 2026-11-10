@@ -103,10 +103,12 @@ export async function borrarSuscripcion(endpoint: string) {
 }
 
 // Manda el aviso a todos los celulares suscritos. Nunca lanza error: si falla, el correo sigue saliendo.
-export async function enviarPush(avisos: AvisoPush | AvisoPush[]): Promise<{ enviados: number; fallidos: number }> {
-  const lista = (Array.isArray(avisos) ? avisos : [avisos]).slice(0, 6);
+// aceptados[i] = a cuántos celulares llegó el aviso i (lo aceptó el servicio de avisos). 0 = no salió: se puede reintentar.
+// "limite" evita saturar el celular con avisos del resumen; las medicinas mandan todos (ninguno se descarta en silencio).
+export async function enviarPush(avisos: AvisoPush | AvisoPush[], limite = 6): Promise<{ enviados: number; fallidos: number; aceptados: number[] }> {
+  const lista = (Array.isArray(avisos) ? avisos : [avisos]).slice(0, limite);
   const llaves = llavesVapid();
-  const resultado = { enviados: 0, fallidos: 0 };
+  const resultado = { enviados: 0, fallidos: 0, aceptados: lista.map(() => 0) };
   if (!llaves || !lista.length || !pushConfigurado()) return resultado;
   const subs = await suscripciones().catch((e) => {
     console.error("Push:", e);
@@ -114,10 +116,11 @@ export async function enviarPush(avisos: AvisoPush | AvisoPush[]): Promise<{ env
   });
   const vapidDetails = { subject: `mailto:${process.env.ALLOWED_EMAIL}`, publicKey: llaves.publica, privateKey: llaves.privada };
   for (const s of subs) {
-    for (const aviso of lista) {
+    for (const [i, aviso] of lista.entries()) {
       try {
         await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(aviso), { vapidDetails, TTL: 6 * 3600, urgency: "high" });
         resultado.enviados++;
+        resultado.aceptados[i]++;
       } catch (e) {
         resultado.fallidos++;
         const codigo = (e as { statusCode?: number }).statusCode;

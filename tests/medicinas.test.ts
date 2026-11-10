@@ -55,3 +55,11 @@ test("firmas, calendario y Google Calendar", () => {
   assert.equal(url.searchParams.get("dates"), "20261103T160000/20261103T161000");
   assert.equal(url.searchParams.get("recur"), "RRULE:FREQ=DAILY");
 });
+
+test("S16: la toma de las 23:55 termina al día siguiente en Google Calendar", () => {
+  const m = { id: "x", nombre: "Prueba", cantidad: 1, unidad: "tableta", cadaHoras: 24, primera: "23:55", nota: "", foto: null } as Medicinas["lista"][number];
+  const fechas = (h: string, hoy: string) => new URL(enlaceGoogle(m, h, hoy)).searchParams.get("dates");
+  assert.equal(fechas("23:55", "2026-12-31"), "20261231T235500/20270101T000500");
+  assert.equal(fechas("23:55", "2028-02-28"), "20280228T235500/20280229T000500");
+  assert.equal(fechas("23:49", "2026-11-10"), "20261110T234900/20261110T235900");
+});
