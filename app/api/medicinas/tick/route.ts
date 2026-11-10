@@ -1,5 +1,5 @@
 import { esDemo } from "@/lib/demo";
-import { firmar, guardarMedicinas, leerMedicinas, porAvisar, textoDosis } from "@/lib/medicinas";
+import { firmar, guardarMedicinas, hora12, leerMedicinas, porAvisar, textoDosis } from "@/lib/medicinas";
 import { enviarPush, type AvisoPush } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   if (!toca.length) return Response.json({ ok: true, avisos: 0 });
   const avisos: AvisoPush[] = toca.map(({ m, fecha, hora, clave }) => ({
     titulo: `💊 Hora de tu ${m.nombre}`,
-    cuerpo: `${textoDosis(m)} · ${hora}${m.nota ? ` · ${m.nota}` : ""}`,
+    cuerpo: `${textoDosis(m)} · ${hora12(hora)}${m.nota ? ` · ${m.nota}` : ""}`,
     url: "/medicinas",
     etiqueta: `medicina-${m.id}`,
     imagen: m.foto ? `${origen}/api/medicinas/foto/${m.id}?k=${firmar(m.id)}` : undefined,

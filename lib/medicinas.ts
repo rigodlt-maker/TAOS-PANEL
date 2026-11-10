@@ -62,6 +62,12 @@ export function limpiarMedicinas(d: unknown): Medicinas {
 }
 
 // Las horas de cada día: desde la primera toma, cada N horas, dentro de 24 h (8:00 cada 8 h → 00:00, 08:00, 16:00)
+// Hora para leer: 00:00 → 12:00 a.m., 16:00 → 4:00 p.m. (nunca "00:00")
+export const hora12 = (hhmm: string) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}\u00a0${h < 12 ? "a.m." : "p.m."}`;
+};
+
 export function horarios(m: Pick<Medicina, "primera" | "cadaHoras">): string[] {
   const inicio = minutos(m.primera);
   const n = Math.max(1, Math.floor(24 / m.cadaHoras));

@@ -1,5 +1,5 @@
 import { fechaLocal } from "@/lib/fechas";
-import { CADA_HORAS, enlaceGoogle, horarios, leerMedicinas, textoDosis, tomasDelDia, UNIDADES, type Medicina } from "@/lib/medicinas";
+import { CADA_HORAS, enlaceGoogle, horarios, leerMedicinas, textoDosis, tomasDelDia, UNIDADES, type Medicina, hora12 } from "@/lib/medicinas";
 import { Tarjeta } from "../../componentes";
 import { FotoMedicina } from "../../foto-medicina";
 import { guardarMedicinaForm, marcarTomaHoy, quitarMedicinaForm } from "./acciones";
@@ -41,7 +41,7 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
                       {m.nota ? ` · ${m.nota}` : ""}
                     </span>
                   </span>
-                  <span className="habito-racha">{hora}</span>
+                  <span className="habito-racha">{hora12(hora)}</span>
                 </button>
               </form>
             ))}
@@ -52,13 +52,13 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
 
       {d.lista.length > 0 && (
         <Tarjeta titulo="🔔 Que nunca se te olvide">
-          <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
-            1) Activa las notificaciones en Menú: te llega el aviso con la foto y el botón “Ya me la tomé”. 2) Además, agrega las alarmas a tu calendario: suenan aunque no
-            tengas internet.
-          </p>
           <a className="boton" href="/api/medicinas/calendario">
             📅 Agregar todas a mi calendario
           </a>
+          <p className="tenue" style={{ fontSize: 14, marginTop: 12 }}>
+            1) Activa las notificaciones en Menú: te llega el aviso con la foto y el botón “Ya me la tomé”. 2) Además, agrega las alarmas a tu calendario: suenan aunque no
+            tengas internet.
+          </p>
           <details style={{ marginTop: 12 }}>
             <summary className="tenue" style={{ fontSize: 14 }}>
               ¿Usas Google Calendar en Android? Agrégalas una por una
@@ -68,7 +68,7 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
                 horarios(m).map((h) => (
                   <li key={`${m.id}${h}`}>
                     <a href={enlaceGoogle(m, h, hoy)} target="_blank" rel="noopener noreferrer">
-                      ➕ {m.nombre} a las {h}
+                      ➕ {m.nombre} a las {hora12(h)}
                     </a>
                   </li>
                 )),
@@ -87,7 +87,7 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
                 <span>
                   <strong>{m.nombre}</strong>
                   <span className="tenue" style={{ display: "block", fontSize: 13 }}>
-                    {textoDosis(m)} cada {m.cadaHoras} h · {horarios(m).join(", ")}
+                    {textoDosis(m)} cada {m.cadaHoras} h · {horarios(m).map(hora12).join(", ")}
                   </span>
                 </span>
                 <a href={`/medicinas?editar=${m.id}#editar`}>Editar</a>

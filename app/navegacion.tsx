@@ -4,6 +4,7 @@
 import { CalendarDays, CalendarPlus, LayoutGrid, ListChecks, Mail, Sun, type LucideIcon } from "lucide-react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const SECCIONES = [
   { ruta: "/", nombre: "Hoy", icono: Sun },
@@ -27,16 +28,26 @@ function Contenido({ icono: Icono, nombre, activa }: { icono: LucideIcon; nombre
 export function Navegacion() {
   const actual = usePathname();
   const activa = (ruta: string) => (ruta === "/" ? actual === "/" : actual.startsWith(ruta));
+  // Al desplazar, el botón se reduce a solo el ícono para no tapar nada; en Medicinas no sale (tiene sus propios botones)
+  const [arriba, setArriba] = useState(true);
+  useEffect(() => {
+    const revisar = () => setArriba(window.scrollY < 24);
+    revisar();
+    window.addEventListener("scroll", revisar, { passive: true });
+    return () => window.removeEventListener("scroll", revisar);
+  }, []);
   return (
     <>
-      <div className="fab-zona">
-        <div>
-          <a className="fab" href="https://calendar.google.com/calendar/r/eventedit" target="_blank" data-recorrido="flotante">
-            <CalendarPlus size={24} strokeWidth={2.4} />
-            Evento
-          </a>
+      {!actual.startsWith("/medicinas") && (
+        <div className="fab-zona">
+          <div>
+            <a className={arriba ? "fab" : "fab fab-solo"} href="https://calendar.google.com/calendar/r/eventedit" target="_blank" data-recorrido="flotante" aria-label="Agregar un evento">
+              <CalendarPlus size={24} strokeWidth={2.4} />
+              {arriba && "Evento"}
+            </a>
+          </div>
         </div>
-      </div>
+      )}
       <nav className="barra" aria-label="Secciones">
         <ul>
           {SECCIONES.map((s) => (

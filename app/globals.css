@@ -121,6 +121,7 @@ a, button, summary { touch-action: manipulation; }
   box-shadow: 0 8px 24px rgb(212 175 55 / 0.35);
 }
 .fab:active { transform: scale(0.95); }
+.fab-solo { width: 56px; padding: 0; justify-content: center; }
 
 /* ---------- Tarjetas y listas ---------- */
 .tarjeta {
