@@ -2,8 +2,8 @@ import { revisarLicencia } from "@/lib/licencia";
 
 export const dynamic = "force-dynamic";
 
-export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string; espera?: string }> }) {
+  const { error, espera } = await searchParams;
   // Con contraseña configurada (no es modo demostración), primero se revisa el código de compra
   const licencia = process.env.PANEL_PASSWORD ? await revisarLicencia() : ({ ok: true } as const);
   if (!licencia.ok)
@@ -31,6 +31,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
         <label htmlFor="clave">Contraseña</label>
         <input id="clave" name="clave" type="password" autoFocus required />
         {error && <p className="error">Contraseña incorrecta, intenta de nuevo.</p>}
+        {espera && <p className="error">Demasiados intentos. Por seguridad, espera {Number(espera) || 15} minutos y vuelve a intentar.</p>}
         <button type="submit">Entrar</button>
       </form>
     </main>

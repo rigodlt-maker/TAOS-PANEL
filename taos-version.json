@@ -5,6 +5,7 @@
     "Más seguridad: en modo demostración (sin PANEL_PASSWORD) la app nunca lee ni guarda nada en tu base de datos.",
     "TAOS funciona 100% con reglas gratis: se quitó la opción de IA de pago.",
     "Medicinas: si un aviso no llegó (sin señal o servicio caído), se vuelve a intentar cada 15 minutos hasta 2 horas.",
-    "Medicinas: la toma de las 11:55 pm ya se agrega bien a Google Calendar."
+    "Medicinas: la toma de las 11:55 pm ya se agrega bien a Google Calendar.",
+    "Más seguridad: después de 5 contraseñas incorrectas hay que esperar 15 minutos para volver a intentar."
   ]
 }
