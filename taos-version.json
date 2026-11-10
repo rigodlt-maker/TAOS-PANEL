@@ -6,6 +6,7 @@
     "TAOS funciona 100% con reglas gratis: se quitó la opción de IA de pago.",
     "Medicinas: si un aviso no llegó (sin señal o servicio caído), se vuelve a intentar cada 15 minutos hasta 2 horas.",
     "Medicinas: la toma de las 11:55 pm ya se agrega bien a Google Calendar.",
-    "Más seguridad: después de 5 contraseñas incorrectas hay que esperar 15 minutos para volver a intentar."
+    "Más seguridad: después de 5 contraseñas incorrectas hay que esperar 15 minutos para volver a intentar.",
+    "Detalles de pantalla: textos más claros, cifras con centavos, botones que dicen lo que hacen y gráficas más fáciles de leer."
   ]
 }

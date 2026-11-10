@@ -1,3 +1,4 @@
+import { Reintentar } from "@/app/reintentar";
 import { headers } from "next/headers";
 import { esDemo } from "@/lib/demo";
 import { googleConfigurado, refreshGuardado, urlRegreso } from "@/lib/google-cuenta";
@@ -114,13 +115,19 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
             ))}
           </ul>
         ) : (
-          <p className="error">⚠️ {clima.error}</p>
+          <>
+            <p className="error">⚠️ {clima.error}</p>
+            <Reintentar />
+          </>
         )}
       </Tarjeta>
 
       <Tarjeta titulo="📰 Noticias">
         {!noticias.ok ? (
-          <p className="error">⚠️ {noticias.error}</p>
+          <>
+            <p className="error">⚠️ {noticias.error}</p>
+            <Reintentar />
+          </>
         ) : (
           <ul>
             {noticias.datos.slice(0, 5).map((n, i) => (

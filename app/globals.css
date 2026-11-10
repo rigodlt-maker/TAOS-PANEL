@@ -199,8 +199,8 @@ li:first-child { border-top: none; padding-top: 4px; }
 .dias .chip { text-transform: capitalize; }
 
 .linea-tiempo { list-style: none; margin: 0; padding: 0; }
-.linea-tiempo li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; border-top: none; padding: 10px 0 10px 12px; border-left: 2px solid var(--borde); }
-.linea-tiempo .hora { font-size: 13px; color: var(--tenue); }
+.linea-tiempo li { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; border-top: none; padding: 10px 0 10px 12px; border-left: 2px solid var(--borde); }
+.linea-tiempo .hora { font-size: 13px; color: var(--tenue); white-space: nowrap; }
 .linea-tiempo .evento { border-left-color: var(--acento); }
 .linea-tiempo .evento a { color: var(--texto); font-weight: 500; }
 .linea-tiempo .choque { border-left-color: var(--error); }
