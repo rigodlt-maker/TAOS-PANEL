@@ -1,7 +1,7 @@
 import { analizarDia } from "@/lib/agenda";
 import { duracion, fechaCorta, horaLocal, sumarDias } from "@/lib/fechas";
 import type { Evento } from "@/lib/google";
-import { iaDisponible, resumenIA } from "@/lib/ia";
+import { resumenIA } from "@/lib/ia";
 import { DIAS_AGENDA, type DatosPanel, type Seccion } from "@/lib/panel";
 
 export function Tarjeta({
@@ -164,7 +164,6 @@ export async function SeccionIA({ datos }: { datos: DatosPanel }) {
         </div>
       </div>
       {ia.sugerencia && <p className="sugerencia">💡 {ia.sugerencia}</p>}
-      {!iaDisponible() && <p className="tenue nota">Versión gratuita sin IA. Se vuelve más lista si agregas ANTHROPIC_API_KEY en Vercel.</p>}
     </Tarjeta>
   );
 }

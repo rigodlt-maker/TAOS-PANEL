@@ -45,3 +45,17 @@ test("la URL de Supabase se limpia aunque se haya copiado con ruta", () => {
   assert.equal(soloDominio(" https://abc.supabase.co/rest/v1/ "), "https://abc.supabase.co");
   assert.equal(soloDominio("https://abc.supabase.co"), "https://abc.supabase.co");
 });
+
+test("modo demostración: nunca abre la base de datos real aunque estén las llaves", async () => {
+  const { cliente } = await import("../lib/push");
+  const antes = { ...process.env };
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://ejemplo.supabase.co";
+  process.env.SUPABASE_SECRET_KEY = "sb_secret_ejemplo";
+  process.env.ALLOWED_EMAIL = "demo@ejemplo.com";
+  delete process.env.PANEL_PASSWORD;
+  try {
+    assert.throws(() => cliente(), /modo demostración/);
+  } finally {
+    process.env = antes;
+  }
+});

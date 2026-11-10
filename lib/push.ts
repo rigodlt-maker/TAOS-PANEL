@@ -58,7 +58,12 @@ export function soloDominio(url: string): string {
   }
 }
 
+// En modo demostración (sin PANEL_PASSWORD) nunca se toca la base de datos real, aunque estén sus llaves en Vercel:
+// así una app de anuncios o una instalación a medias no puede leer ni cambiar los datos de nadie.
+export const MENSAJE_DEMO = "Estás en modo demostración: aquí no se guarda nada. Pon PANEL_PASSWORD en Vercel para usar tus datos.";
+
 export function cliente() {
+  if (!process.env.PANEL_PASSWORD) throw new Error(MENSAJE_DEMO);
   if (!pushConfigurado()) throw new Error(`Falta en Vercel: ${variablesFaltantes().join(", ")}.`);
   return createClient(soloDominio(process.env.NEXT_PUBLIC_SUPABASE_URL!), process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
 }
