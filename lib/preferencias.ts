@@ -2,6 +2,7 @@
 // y se cambian en la pantalla Ajustes. Sin configurar, el panel funciona con valores neutros.
 import { cache } from "react";
 import { limpiarAuto, type MiAuto } from "./no-circula";
+import { guardarDatos } from "./guardar";
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export type Lugar = { nombre: string; icono: string; direccion: string };
@@ -39,14 +40,9 @@ export const preferencias = cache(async (): Promise<Preferencias> => {
   }
 });
 
+// Solo cambia nombre, ciudad, lugares y auto; lo demás (hábitos, medicinas) se queda como está (S14-B)
 export async function guardarPreferencias(p: Omit<Preferencias, "configurado">) {
-  const db = cliente();
-  const uid = await idDelDueno();
-  // Se conserva lo demás que vive en "datos" (por ejemplo, tus hábitos)
-  const { data } = await db.from("panel_config").select("datos").eq("user_id", uid).maybeSingle();
-  const datos = { ...((data?.datos as Record<string, unknown> | null) ?? {}), ...p };
-  const { error } = await db.from("panel_config").upsert({ user_id: uid, datos, updated_at: new Date().toISOString() });
-  if (error) throw new Error(/does not exist|schema cache/i.test(error.message) ? "Falta crear la tabla en Supabase: entra a Más › Ajustes › Configurar base de datos." : error.message);
+  await guardarDatos(() => ({ nombre: p.nombre, ciudad: p.ciudad, lugares: p.lugares, auto: p.auto }));
 }
 
 // Busca la ciudad en el servicio gratuito de Open-Meteo (sin llave) para ubicar el clima

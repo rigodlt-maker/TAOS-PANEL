@@ -7,6 +7,7 @@ import { cache } from "react";
 import { DESFASE, ZONA } from "./config";
 import { esDemo } from "./demo";
 import { fechaLocal, sumarDias } from "./fechas";
+import { guardarDatos, type Operacion } from "./guardar";
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export const UNIDADES = ["pastilla", "cápsula", "tableta", "sobre", "cucharada", "cucharadita", "gotas", "ml", "inyección", "parche", "toma"] as const;
@@ -23,7 +24,8 @@ export type Medicina = {
   nota: string; // "con alimentos", "en ayunas"…
   foto: string | null; // imagen pequeña (data:image/jpeg;base64,…)
 };
-// tomas: fecha → ["id@08:00", …] · enviados: avisos ya mandados "fecha id@hora" (para no repetir)
+// tomas: fecha → ["id@08:00", …] · enviados: avisos ya mandados "fecha id@hora" (solo la versión sin SQL 1.3;
+// con el SQL 1.3 los avisos se apartan y se anotan en la tabla panel_medicina_avisos)
 export type Medicinas = { lista: Medicina[]; tomas: Record<string, string[]>; enviados: string[] };
 
 const VACIO: Medicinas = { lista: [], tomas: {}, enviados: [] };
@@ -79,6 +81,9 @@ export const textoDosis = (m: Pick<Medicina, "cantidad" | "unidad">) => {
   const unidad = m.unidad === "inyección" && plural ? "inyecciones" : `${m.unidad}${plural}`;
   return `${String(m.cantidad).replace(".5", "½").replace(/^0½/, "½")} ${unidad}`;
 };
+
+// Huella del horario: si cambias la hora o cada cuántas horas, los avisos pendientes del horario viejo ya no salen
+export const revisionDe = (m: Pick<Medicina, "primera" | "cadaHoras">) => `${m.primera}/${m.cadaHoras}`;
 
 export const tomada = (d: Medicinas, fecha: string, id: string, h: string) => !!d.tomas[fecha]?.includes(`${id}@${h}`);
 
@@ -200,7 +205,8 @@ function demo(): Medicinas {
   return g.__medicinasDemo;
 }
 
-export const leerMedicinas = cache(async (): Promise<Medicinas> => {
+// Sin la memoria de una misma página (el despertador vuelve a leer justo antes de mandar)
+export async function leerMedicinasDirecto(): Promise<Medicinas> {
   if (esDemo()) return demo();
   if (!pushConfigurado()) return VACIO;
   try {
@@ -210,17 +216,14 @@ export const leerMedicinas = cache(async (): Promise<Medicinas> => {
   } catch {
     return VACIO;
   }
-});
+}
+export const leerMedicinas = cache(leerMedicinasDirecto);
 
-export async function guardarMedicinas(d: Medicinas) {
+// S14-B: el cambio se aplica sobre lo que hay guardado EN ESE MOMENTO (no sobre una copia vieja) y solo toca "medicinas"
+export async function cambiarMedicinas(f: (d: Medicinas) => Medicinas, op?: Operacion) {
   if (esDemo()) {
-    g.__medicinasDemo = d;
+    g.__medicinasDemo = limpiarMedicinas(f(demo()));
     return;
   }
-  const db = cliente();
-  const uid = await idDelDueno();
-  const { data } = await db.from("panel_config").select("datos").eq("user_id", uid).maybeSingle();
-  const datos = { ...((data?.datos as Record<string, unknown> | null) ?? {}), medicinas: limpiarMedicinas(d) };
-  const { error } = await db.from("panel_config").upsert({ user_id: uid, datos, updated_at: new Date().toISOString() });
-  if (error) throw new Error(/does not exist|schema cache/i.test(error.message) ? "Falta crear la tabla en Supabase: entra a Menú › Ajustes › Configurar base de datos." : error.message);
+  await guardarDatos((datos) => ({ medicinas: limpiarMedicinas(f(limpiarMedicinas(datos.medicinas))) }), op);
 }

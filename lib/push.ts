@@ -1,4 +1,4 @@
-import { createECDH, createHmac } from "node:crypto";
+import { createECDH, createHash, createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 import { eventosDelDia } from "./agenda";
@@ -134,6 +134,32 @@ export async function enviarPush(avisos: AvisoPush | AvisoPush[], limite = 6): P
     }
   }
   return resultado;
+}
+
+// S14-C · Un aviso a UN celular, con resultado claro: "aceptado" (lo recibió el servicio de notificaciones; no garantiza
+// que lo viste), "invalido" (ese celular ya no acepta avisos: se quita) o "pendiente" (falló: se reintenta después)
+export const idDispositivo = (endpoint: string) => createHash("sha256").update(endpoint).digest("base64url").slice(0, 22);
+
+export async function enviarA(s: SuscripcionPush, aviso: AvisoPush): Promise<"aceptado" | "invalido" | "pendiente"> {
+  const llaves = llavesVapid();
+  if (!llaves) return "pendiente";
+  try {
+    await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(aviso), {
+      vapidDetails: { subject: `mailto:${process.env.ALLOWED_EMAIL}`, publicKey: llaves.publica, privateKey: llaves.privada },
+      TTL: 6 * 3600,
+      urgency: "high",
+      timeout: 10_000,
+    });
+    return "aceptado";
+  } catch (e) {
+    const codigo = (e as { statusCode?: number }).statusCode;
+    if (codigo === 404 || codigo === 410) {
+      await borrarSuscripcion(s.endpoint).catch(() => {});
+      return "invalido";
+    }
+    console.error("Push:", codigo, (e as Error).message);
+    return "pendiente";
+  }
 }
 
 // ---------- Textos de los avisos ----------

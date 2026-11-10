@@ -1,3 +1,5 @@
+import { estadoDespertador } from "@/lib/despertador";
+import { esDemo } from "@/lib/demo";
 import { preferencias } from "@/lib/preferencias";
 import { Tarjeta } from "../../componentes";
 import { guardarAjustes } from "./acciones";
@@ -8,6 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function Ajustes({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { ok, error } = await searchParams;
   const p = await preferencias();
+  const despertador = esDemo() ? null : await estadoDespertador();
   return (
     <div className="pila">
       <div className="titulo">
@@ -18,6 +21,18 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
       {error && (
         <p className="error">
           ⚠️ {error} {/Supabase/.test(error) && <a href="/configurar">Configurar base de datos →</a>}
+        </p>
+      )}
+      {despertador?.faltaSql && (
+        <p className="aviso">
+          🔒 Tu app se actualizó: falta 1 minuto. Copia el SQL de seguridad y pégalo en Supabase para que los avisos de medicinas y el límite de
+          contraseña funcionen. <a href="/configurar">Configurar base de datos →</a>
+        </p>
+      )}
+      {despertador?.ultima && (
+        <p className="tenue" style={{ fontSize: 13 }}>
+          💊 Avisos de medicinas: última revisión {new Date(despertador.ultima.cuando).toLocaleString("es-MX", { timeZone: "America/Mexico_City", dateStyle: "short", timeStyle: "short" })}
+          {despertador.ultima.detalle ? ` · ${despertador.ultima.detalle}` : ""}. «Aceptado» quiere decir que el servicio de notificaciones lo recibió.
         </p>
       )}
       <form action={guardarAjustes} className="pila">

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { fechaLocal } from "@/lib/fechas";
 import { CADA_HORAS, enlaceGoogle, horarios, leerMedicinas, textoDosis, tomasDelDia, UNIDADES, type Medicina, hora12 } from "@/lib/medicinas";
 import { Tarjeta } from "../../componentes";
@@ -32,6 +33,9 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
                 <input type="hidden" name="id" value={m.id} />
                 <input type="hidden" name="hora" value={hora} />
                 <input type="hidden" name="fecha" value={hoy} />
+                {/* S14-B: lo que quieres (marcar o desmarcar), no "invertir"; y un id para no aplicarlo dos veces */}
+                <input type="hidden" name="hecha" value={hecha ? "0" : "1"} />
+                <input type="hidden" name="op" value={randomUUID()} />
                 <button type="submit" className={hecha ? "habito hecho" : "habito"} aria-pressed={hecha}>
                   <span className="habito-icono">{hecha ? "✅" : m.foto ? <img src={m.foto} alt="" className="mini-foto" /> : "💊"}</span>
                   <span className="habito-nombre">
@@ -103,6 +107,7 @@ export default async function Medicinas({ searchParams }: { searchParams: Promis
           {enEdicion && (
             <form action={quitarMedicinaForm} style={{ marginTop: 12 }}>
               <input type="hidden" name="id" value={enEdicion.id} />
+              <input type="hidden" name="op" value={randomUUID()} />
               <button type="submit" className="boton secundario chico">
                 Quitar de mi lista
               </button>
@@ -121,6 +126,7 @@ function Formulario({ m }: { m?: Medicina }) {
   return (
     <form action={guardarMedicinaForm} className="campos">
       {m && <input type="hidden" name="id" value={m.id} />}
+      <input type="hidden" name="op" value={randomUUID()} />
       <FotoMedicina actual={m?.foto ?? null} />
       <label>
         Nombre

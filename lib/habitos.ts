@@ -3,6 +3,7 @@
 import { cache } from "react";
 import { esDemo } from "./demo";
 import { fechaLocal, sumarDias } from "./fechas";
+import { guardarDatos, type Operacion } from "./guardar";
 import { cliente, idDelDueno, pushConfigurado } from "./push";
 
 export type Habito = { id: string; nombre: string; icono: string };
@@ -69,10 +70,12 @@ export function rachaCompleta(h: Habitos, hoy: string): number {
 
 export const pendientesDeHoy = (h: Habitos, hoy: string) => h.lista.filter((x) => !h.hechos[hoy]?.includes(x.id));
 
-export function marcar(h: Habitos, id: string, fecha: string): Habitos {
+// hecho: true = marcar, false = desmarcar (lo que viste en pantalla); sin él, invierte (compatibilidad)
+export function marcar(h: Habitos, id: string, fecha: string, hecho?: boolean): Habitos {
   if (!h.lista.some((x) => x.id === id)) return h;
   const del = h.hechos[fecha] ?? [];
-  const nuevo = del.includes(id) ? del.filter((x) => x !== id) : [...del, id];
+  const quiero = hecho ?? !del.includes(id);
+  const nuevo = quiero ? (del.includes(id) ? del : [...del, id]) : del.filter((x) => x !== id);
   const hechos = { ...h.hechos, [fecha]: nuevo };
   if (!nuevo.length) delete hechos[fecha];
   // Solo los últimos 120 días
@@ -121,17 +124,13 @@ export const leerHabitos = cache(async (): Promise<Habitos> => {
   }
 });
 
-export async function guardarHabitos(h: Habitos) {
+// S14-B: el cambio se aplica sobre lo guardado en ese momento y solo toca "habitos"
+export async function cambiarHabitos(f: (h: Habitos) => Habitos, op?: Operacion) {
   if (esDemo()) {
-    g.__habitosDemo = h;
+    g.__habitosDemo = f(demo());
     return;
   }
-  const db = cliente();
-  const uid = await idDelDueno();
-  const { data } = await db.from("panel_config").select("datos").eq("user_id", uid).maybeSingle();
-  const datos = { ...((data?.datos as Record<string, unknown> | null) ?? {}), habitos: h };
-  const { error } = await db.from("panel_config").upsert({ user_id: uid, datos, updated_at: new Date().toISOString() });
-  if (error) throw new Error(/does not exist|schema cache/i.test(error.message) ? "Falta crear la tabla en Supabase: entra a Menú › Ajustes › Configurar base de datos." : error.message);
+  await guardarDatos((datos) => ({ habitos: f(limpiarHabitos(datos.habitos)) }), op);
 }
 
 // Aviso de la noche si faltan hábitos de hoy

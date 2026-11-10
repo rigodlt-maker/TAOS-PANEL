@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { fechaLocal, sumarDias } from "@/lib/fechas";
 import { ICONOS_HABITO, leerHabitos, racha, rachaCompleta, SUGERIDOS } from "@/lib/habitos";
 import { Tarjeta } from "../../componentes";
@@ -35,6 +36,8 @@ export default async function Habitos({ searchParams }: { searchParams: Promise<
                 <form key={x.id} action={marcarHoy}>
                   <input type="hidden" name="id" value={x.id} />
                   <input type="hidden" name="fecha" value={hoy} />
+                  <input type="hidden" name="hecho" value={hecho ? "0" : "1"} />
+                  <input type="hidden" name="op" value={randomUUID()} />
                   <button type="submit" className={hecho ? "habito hecho" : "habito"} aria-pressed={hecho}>
                     <span className="habito-icono">{hecho ? "✅" : x.icono}</span>
                     <span className="habito-nombre">{x.nombre}</span>

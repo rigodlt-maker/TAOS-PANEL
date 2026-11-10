@@ -6,7 +6,9 @@
     "TAOS funciona 100% con reglas gratis: se quitó la opción de IA de pago.",
     "Medicinas: si un aviso no llegó (sin señal o servicio caído), se vuelve a intentar cada 15 minutos hasta 2 horas.",
     "Medicinas: la toma de las 11:55 pm ya se agrega bien a Google Calendar.",
-    "Más seguridad: después de 5 contraseñas incorrectas hay que esperar 15 minutos para volver a intentar.",
-    "Detalles de pantalla: textos más claros, cifras con centavos, botones que dicen lo que hacen y gráficas más fáciles de leer."
+    "Detalles de pantalla: textos más claros, cifras con centavos, botones que dicen lo que hacen y gráficas más fáciles de leer.",
+    "Más seguridad: el límite de 5 intentos de contraseña ahora es el mismo para todos los servidores (se guarda en tu Supabase).",
+    "Tu conexión con Google se guarda en una tabla aparte que solo lee el servidor.",
+    "Medicinas: los guardados ya no se pisan entre sí y cada aviso se aparta antes de mandarse; el despertador solo acepta llamadas firmadas por TAOS. (Necesita pegar el SQL nuevo: la app te lo pide en Ajustes.)"
   ]
 }
