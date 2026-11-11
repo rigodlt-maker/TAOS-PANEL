@@ -40,7 +40,7 @@ export function parche<T extends Record<string, unknown>>(actual: T, base: Recor
   }
   if (choques.length)
     throw new ConflictoDeCampos(
-      `Mientras editabas, otra pantalla cambió ${choques.map((c) => nombres[c] ?? c).join(", ")}. No se guardó nada: revisa y vuelve a guardar.`,
+      `Mientras editabas, otra pantalla cambió ${choques.map((c) => nombres[c] ?? c).join(", ")}. No se guardó nada.`,
       choques,
     );
   return salida;

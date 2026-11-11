@@ -23,6 +23,6 @@ test("S17-A: base de datos caída = 503 con el mismo texto", async () => {
 test("B1: el aviso de conflicto dice qué cambió y que no se guardó nada", () => {
   assert.throws(
     () => parche({ nota: "b" }, { nota: "a" }, { nota: "c" }, { nota: "la nota" }),
-    (e) => e instanceof ConflictoDeCampos && /^Mientras editabas, otra pantalla cambió la nota\. No se guardó nada/.test(e.message),
+    (e) => e instanceof ConflictoDeCampos && e.message === "Mientras editabas, otra pantalla cambió la nota. No se guardó nada.",
   );
 });
