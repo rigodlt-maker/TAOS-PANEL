@@ -62,11 +62,13 @@ test("S14: sin origen configurado no se atiende (no se confía en el encabezado 
   assert.equal(r.ok, false);
 });
 
-test("S14: la llave pública de Rigo (tick-2026-11) está en LLAVES_TICK, es Ed25519 válida y sin parte privada", async () => {
+test("S14: solo la llave pública nueva (tick-2026-11b) está en LLAVES_TICK, la anterior (tick-2026-11) ya no; es Ed25519 válida y sin parte privada", async () => {
   const { LLAVES_TICK } = await import("../lib/tick-firma");
-  assert.deepEqual(Object.keys(LLAVES_TICK), ["tick-2026-11"]);
-  const l = LLAVES_TICK["tick-2026-11"];
-  assert.deepEqual(l, { kty: "OKP", crv: "Ed25519", x: "84caT7E5RDer3-46F-gqciGEOQtQUk7QVZIOFA2G450" });
+  assert.deepEqual(Object.keys(LLAVES_TICK), ["tick-2026-11b"]);
+  assert.equal("tick-2026-11" in LLAVES_TICK, false);
+  assert.equal(JSON.stringify(LLAVES_TICK).includes("84caT7E5RDer3-46F-gqciGEOQtQUk7QVZIOFA2G450"), false);
+  const l = LLAVES_TICK["tick-2026-11b"];
+  assert.deepEqual(l, { kty: "OKP", crv: "Ed25519", x: "kA_8nzoSUpkE_aqPt3OXqzwzsySrO0AFKsCmc1Y4ihE" });
   assert.equal("d" in l, false);
   assert.equal(Buffer.from(l.x!, "base64url").length, 32);
   await crypto.subtle.importKey("jwk", l, { name: "Ed25519" }, false, ["verify"]);
