@@ -62,13 +62,13 @@ test("S14: sin origen configurado no se atiende (no se confía en el encabezado 
   assert.equal(r.ok, false);
 });
 
-test("S14: solo la llave pública nueva (tick-2026-11b) está en LLAVES_TICK, la anterior (tick-2026-11) ya no; es Ed25519 válida y sin parte privada", async () => {
+test("S14: solo la llave pública vigente (tick-2026-11c) está en LLAVES_TICK; las retiradas (tick-2026-11, tick-2026-11b) ya no; es Ed25519 válida y sin parte privada", async () => {
   const { LLAVES_TICK } = await import("../lib/tick-firma");
-  assert.deepEqual(Object.keys(LLAVES_TICK), ["tick-2026-11b"]);
-  assert.equal("tick-2026-11" in LLAVES_TICK, false);
-  assert.equal(JSON.stringify(LLAVES_TICK).includes("84caT7E5RDer3-46F-gqciGEOQtQUk7QVZIOFA2G450"), false);
-  const l = LLAVES_TICK["tick-2026-11b"];
-  assert.deepEqual(l, { kty: "OKP", crv: "Ed25519", x: "kA_8nzoSUpkE_aqPt3OXqzwzsySrO0AFKsCmc1Y4ihE" });
+  assert.deepEqual(Object.keys(LLAVES_TICK), ["tick-2026-11c"]);
+  for (const vieja of ["tick-2026-11", "tick-2026-11b"]) assert.equal(vieja in LLAVES_TICK, false);
+  for (const x of ["84caT7E5RDer3-46F-gqciGEOQtQUk7QVZIOFA2G450", "kA_8nzoSUpkE_aqPt3OXqzwzsySrO0AFKsCmc1Y4ihE"]) assert.equal(JSON.stringify(LLAVES_TICK).includes(x), false);
+  const l = LLAVES_TICK["tick-2026-11c"];
+  assert.deepEqual(l, { kty: "OKP", crv: "Ed25519", x: "lZWCDm19sm1eJZ7NpoMDwL0J242NHKS0UeMtG3zN-9o" });
   assert.equal("d" in l, false);
   assert.equal(Buffer.from(l.x!, "base64url").length, 32);
   await crypto.subtle.importKey("jwk", l, { name: "Ed25519" }, false, ["verify"]);

@@ -11,8 +11,8 @@ import { createHash, webcrypto } from "node:crypto";
 // kid → llave pública (JWK Ed25519). Para cambiar de llave: se agrega la nueva junto a la vieja, se pasa el servidor a la
 // nueva y en una versión siguiente se quita la vieja. Se llena con la que genere Rigo (licencias/generar-llave-tick.html).
 export const LLAVES_TICK: Record<string, JsonWebKey> = {
-  // 12 nov 2026: llave nueva (la anterior, tick-2026-11, se retiró y ya no se acepta)
-  "tick-2026-11b": { kty: "OKP", crv: "Ed25519", x: "kA_8nzoSUpkE_aqPt3OXqzwzsySrO0AFKsCmc1Y4ihE" },
+  // 13 nov 2026: llave vigente (tick-2026-11 y tick-2026-11b se retiraron y ya no se aceptan)
+  "tick-2026-11c": { kty: "OKP", crv: "Ed25519", x: "lZWCDm19sm1eJZ7NpoMDwL0J242NHKS0UeMtG3zN-9o" },
 };
 
 export const VERSION_TICK = "taos-medicinas-tick-v1";
