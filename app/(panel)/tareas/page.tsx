@@ -1,5 +1,6 @@
 import { fechaLarga, fechaLocal } from "@/lib/fechas";
 import { cargarTareas } from "@/lib/panel";
+import { ErrorSeccion } from "../../error-seccion";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function Tareas() {
       </div>
       <section className="tarjeta">
         {!tareas.ok ? (
-          <p className="error">⚠️ {tareas.error}</p>
+          <ErrorSeccion error={tareas.error} detalle={tareas.detalle} />
         ) : tareas.datos.length === 0 ? (
           <p className="tenue">No tienes tareas pendientes. 🎉</p>
         ) : (

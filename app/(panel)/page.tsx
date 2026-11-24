@@ -1,12 +1,15 @@
 import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
 import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
+import { esDemo } from "@/lib/demo";
+import { estadoDespertador } from "@/lib/despertador";
 import { leerHabitos, rachaCompleta } from "@/lib/habitos";
 import { ahoraLocal, leerMedicinas, tomasDelDia } from "@/lib/medicinas";
 import { cargarAire, cargarPanel } from "@/lib/panel";
 import { AireYSalud } from "../aire-salud";
 import { Cielo } from "../cielo";
 import { SeccionIA, Tarjeta } from "../componentes";
+import { ErrorSeccion } from "../error-seccion";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +23,15 @@ function saludo(): string {
 // Hoy: solo lo importante del día. Lo demás vive en Agenda, Correo, Tareas y Más.
 export default async function Hoy({ searchParams }: { searchParams: Promise<{ enviado?: string }> }) {
   const { enviado } = await searchParams;
-  const [datos, habitos, aire, medicinas] = await Promise.all([cargarPanel(), leerHabitos(), cargarAire(), leerMedicinas()]);
+  // Letrero 1.3.0: si la app ya se actualizó pero falta pegar el SQL nuevo, se avisa aquí (no solo en Ajustes), porque sin él
+  // los avisos de medicinas se detienen
+  const [datos, habitos, aire, medicinas, despertador] = await Promise.all([
+    cargarPanel(),
+    leerHabitos(),
+    cargarAire(),
+    leerMedicinas(),
+    esDemo() ? null : estadoDespertador().catch(() => null),
+  ]);
   const { hoy, semana, tareas, clima } = datos;
   const alertas = semana.ok && tareas.ok ? alertasCruzadas(semana.datos, tareas.datos, hoy) : [];
   const ahora = Date.now();
@@ -47,6 +58,13 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
           {clima.ok && ` · ${clima.datos.descripcion}`}
         </p>
       </div>
+
+      {despertador?.faltaSql && (
+        <a className="tarjeta aviso" href="/configurar" data-letrero="falta-sql">
+          🔒 <strong>Tu app se actualizó: falta 1 paso. Pega el SQL nuevo.</strong> Sin él, los avisos de tus medicinas se detienen. Toca aquí, copia
+          el código y pégalo en Supabase › SQL Editor › Run. →
+        </a>
+      )}
 
       <AireYSalud clima={clima.ok ? clima.datos : null} aire={aire.ok ? aire.datos : null} ciudad={datos.prefs.ciudad.nombre} auto={datos.prefs.auto} hoy={hoy} />
 
@@ -110,7 +128,7 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
 
       <Tarjeta titulo="Lo que sigue hoy" extra={<a href="/agenda">Ver agenda</a>}>
         {!semana.ok ? (
-          <p className="error">⚠️ {semana.error}</p>
+          <ErrorSeccion error={semana.error} detalle={semana.detalle} />
         ) : siguientes.length === 0 ? (
           <p className="tenue">Ya no tienes más eventos hoy.</p>
         ) : (

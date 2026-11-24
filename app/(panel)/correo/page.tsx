@@ -1,5 +1,6 @@
 import { cargarCorreo } from "@/lib/panel";
 import { ListaCorreos } from "../../lista-correos";
+import { ErrorSeccion } from "../../error-seccion";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export default async function Correo() {
       </div>
       <section className="tarjeta">
         {!correo.ok ? (
-          <p className="error">⚠️ {correo.error}</p>
+          <ErrorSeccion error={correo.error} detalle={correo.detalle} />
         ) : (
           <ListaCorreos correos={correo.datos.correos} />
         )}

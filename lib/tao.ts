@@ -100,7 +100,10 @@ function clima(d: DatosTao, q: string): string {
 }
 
 // Errores técnicos ("fetch failed") en palabras sencillas
-const amable = (error: string) => (/fetch failed|network|ENOTFOUND|ETIMEDOUT/i.test(error) ? "no hay conexión con el servicio ahorita; intenta en un momento" : error);
+// B4 (1.3.0): el error de la sección ya viene en palabras sencillas («No pude traer el clima…»); aquí solo se ajusta
+// para que se lea bien después de «No pude ver el clima: »
+const amable = (error: string) =>
+  /^No pude traer /.test(error) || /fetch failed|network|ENOTFOUND|ETIMEDOUT/i.test(error) ? "no hay conexión con el servicio ahorita; intenta en un momento" : error;
 
 export function responderTao(pregunta: string, d: DatosTao): string {
   const q = normalizar(pregunta);

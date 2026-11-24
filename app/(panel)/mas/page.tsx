@@ -8,6 +8,7 @@ import { cargarClima, cargarNoticias } from "@/lib/panel";
 import { AvisosPush } from "../../avisos-push";
 import { TamanoLetra } from "../../tamano-letra";
 import { Tarjeta } from "../../componentes";
+import { ErrorSeccion } from "../../error-seccion";
 
 export const dynamic = "force-dynamic";
 
@@ -116,7 +117,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
           </ul>
         ) : (
           <>
-            <p className="error">⚠️ {clima.error}</p>
+            <ErrorSeccion error={clima.error} detalle={clima.detalle} />
             <Reintentar />
           </>
         )}
@@ -125,7 +126,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
       <Tarjeta titulo="📰 Noticias">
         {!noticias.ok ? (
           <>
-            <p className="error">⚠️ {noticias.error}</p>
+            <ErrorSeccion error={noticias.error} detalle={noticias.detalle} />
             <Reintentar />
           </>
         ) : (

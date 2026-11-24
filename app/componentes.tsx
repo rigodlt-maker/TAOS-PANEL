@@ -3,6 +3,7 @@ import { duracion, fechaCorta, horaLocal, sumarDias } from "@/lib/fechas";
 import type { Evento } from "@/lib/google";
 import { resumenIA } from "@/lib/ia";
 import { DIAS_AGENDA, type DatosPanel, type Seccion } from "@/lib/panel";
+import { ErrorSeccion } from "./error-seccion";
 
 export function Tarjeta({
   titulo,
@@ -33,7 +34,7 @@ export function Agenda({ semana, dia, hoy }: { semana: Seccion<Evento[]>; dia: s
 
   let contenido: React.ReactNode;
   if (!semana.ok) {
-    contenido = <p className="error">⚠️ {semana.error}</p>;
+    contenido = <ErrorSeccion error={semana.error} detalle={semana.detalle} />;
   } else {
     const agenda = analizarDia(dia, semana.datos);
     const filas = [
