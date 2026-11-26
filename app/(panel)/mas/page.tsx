@@ -8,6 +8,7 @@ import { cargarClima, cargarNoticias } from "@/lib/panel";
 import { AvisosPush } from "../../avisos-push";
 import { TamanoLetra } from "../../tamano-letra";
 import { Tarjeta } from "../../componentes";
+import { BarraBuscar } from "../../buscador";
 import { ErrorSeccion } from "../../error-seccion";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
       <div className="titulo">
         <h1>Más</h1>
       </div>
+      <BarraBuscar />
 
       <a className="boton" href="/habitos">
         🌱 Mis hábitos y rachas
@@ -35,7 +37,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
       </a>
 
       {!esDemo() && (
-        <Tarjeta titulo="🔗 Google: agenda, correo y tareas">
+        <Tarjeta titulo="🔗 Google: agenda, correo y tareas" id="google">
           {google === "ok" && <p className="aviso">✅ ¡Listo! Tu cuenta de Google quedó conectada.</p>}
           {google && google !== "ok" && <p className="error">⚠️ {google}</p>}
           {!googleConfigurado() ? (
@@ -59,7 +61,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         </Tarjeta>
       )}
 
-      <Tarjeta titulo="🔔 Notificaciones en el celular">
+      <Tarjeta titulo="🔔 Notificaciones en el celular" id="avisos">
         <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
           En la mañana, tus eventos y tareas del día; en la noche, lo que tienes mañana. Actívalas en cada celular donde las quieras.
         </p>
@@ -73,7 +75,7 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         </span>
         <span style={{ color: "#d4af37" }}>›</span>
       </a>
-      <Tarjeta titulo="🔠 Pantalla">
+      <Tarjeta titulo="🔠 Pantalla" id="pantalla">
         <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
           Tamaño de la letra en este celular.
         </p>

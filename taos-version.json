@@ -1,7 +1,9 @@
 {
-  "version": "1.3.0",
-  "fecha": "2026-11-24",
+  "version": "1.3.1",
+  "fecha": "2026-11-26",
   "novedades": [
+    "Nueva lupa 🔍 arriba: escribe lo que buscas («medicinas», «placa», «calma»…) y te lleva directo a esa pantalla. Si no es una pantalla, se lo pregunta a Tao.",
+    "En Menú también hay una barra para buscar.",
     "Importante: después de esta actualización hay que pegar el SQL nuevo una vez (la app te lo avisa en Hoy y en Ajustes). Sin él, los avisos de tus medicinas se detienen.",
     "Medicinas: cada aviso se vuelve a intentar cada 15 minutos, hasta 2 horas, si no llegó (sin señal o servicio caído). La toma de las 11:55 pm ya se agrega bien a tu calendario.",
     "Medicinas: dos avisos ya no salen repetidos, y solo el servidor de TAOS puede despertar a tu app.",

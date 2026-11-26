@@ -439,3 +439,24 @@ html[data-letra="muy-grande"] main { zoom: 1.25; }
 .foto-medicina .boton { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
 .enlace-quitar { display: block; min-height: 40px; padding: 0; background: transparent; color: var(--tenue); font-size: 14px; font-weight: 400; }
 .alerta-medicina { border-color: var(--acento); }
+
+/* Buscador 🔍 (igual que en las otras apps TAOS) */
+.buscador-fondo { position: fixed; inset: 0; z-index: 55; display: flex; align-items: flex-start; justify-content: center; background: rgb(0 0 0 / 0.6); }
+.buscador-hoja { display: flex; flex-direction: column; width: 100%; max-width: 672px; max-height: 92dvh; background: var(--fondo); border: 1px solid var(--borde); border-radius: 0 0 24px 24px; padding: max(12px, env(safe-area-inset-top)) 16px 16px; }
+.buscador-form { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.buscador-caja { flex: 1; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); color: var(--tenue); }
+.buscador-caja input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--texto); font-size: 16px; outline: none; padding: 0; min-height: 0; }
+.buscador-cuerpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.buscador-grupo { margin: 8px 8px 4px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--tenue); }
+.buscador-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.buscador-fila { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px; border-radius: 12px; color: var(--texto); }
+.buscador-fila:active { background: var(--tarjeta); }
+.buscador-icono { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: rgb(212 175 55 / 0.15); font-size: 20px; }
+.buscador-textos { flex: 1; min-width: 0; display: grid; }
+.buscador-textos strong { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buscador-textos span { font-size: 12px; color: var(--tenue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buscador-flecha { color: var(--tenue); flex-shrink: 0; }
+.buscador-tao { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin-top: 8px; padding: 0 12px; border: 1px solid rgb(212 175 55 / 0.5); border-radius: 12px; background: transparent; color: var(--texto); font-weight: 400; text-align: left; }
+.buscador-tao svg { color: var(--acento); flex-shrink: 0; }
+.buscador-tao span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buscador-barra { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 0 16px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); color: var(--tenue); font-weight: 400; font-size: 16px; }

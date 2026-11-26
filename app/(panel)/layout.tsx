@@ -4,6 +4,7 @@ import { Navegacion } from "../navegacion";
 import { Recorrido, type Paso } from "../recorrido";
 import { Campana } from "../campana";
 import { Actualizacion } from "../actualizacion";
+import { Buscador } from "../buscador";
 import { BotonTao } from "../tao";
 
 // Recorrido de bienvenida (sale una sola vez)
@@ -15,6 +16,7 @@ const RECORRIDO: Paso[] = [
   { icono: "✅", titulo: "Tareas y correo", texto: "Tus pendientes de Google Tasks y los correos importantes, sin abrir otras apps.", donde: "/tareas" },
   { icono: "➕", titulo: "Nuevo evento", texto: "Agrega una cita a tu calendario en un toque.", donde: "flotante" },
   { icono: "⚙️", titulo: "Menú", texto: "Lugares frecuentes con tráfico, sesión de calma, Ajustes y avisos.", donde: "/mas" },
+  { icono: "🔍", titulo: "¿No encuentras algo?", texto: "Toca la lupa y escribe lo que buscas: “medicinas”, “placa”, “calma”… Te llevo directo a esa pantalla.", donde: "buscar" },
   { icono: "🔔", titulo: "Tus avisos", texto: "Aquí quedan los avisos que te manda la app, por si se te pasó alguno.", donde: "campana" },
   { icono: "🎙️", titulo: "Pregúntale a Tao", texto: "“¿Qué tengo hoy?”, “¿va a llover?”, “¿cómo llego a casa?”.", donde: "tao" },
 ];
@@ -28,6 +30,7 @@ export default function LayoutPanel({ children }: { children: React.ReactNode })
           <span>Optimizador de Vida</span>
         </a>
         <div className="encabezado-derecha">
+          <Buscador />
           <Campana ajustes="/mas" />
           <BotonTao ejemplos={EJEMPLOS_TAO} />
         </div>

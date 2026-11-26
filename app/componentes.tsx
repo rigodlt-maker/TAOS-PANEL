@@ -10,14 +10,16 @@ export function Tarjeta({
   children,
   extra,
   ancha,
+  id,
 }: {
   titulo: string;
   children: React.ReactNode;
   extra?: React.ReactNode;
   ancha?: boolean;
+  id?: string;
 }) {
   return (
-    <section className="tarjeta">
+    <section className="tarjeta" id={id} style={id ? { scrollMarginTop: 96 } : undefined}>
       <header>
         <h2>{titulo}</h2>
         {extra}

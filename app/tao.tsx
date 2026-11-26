@@ -121,6 +121,18 @@ export function BotonTao({ ejemplos }: { ejemplos: string[] }) {
     setOcupado(false);
   }
 
+  // Lo que escribiste en el buscador 🔍 y no era una pantalla se le pregunta a Tao
+  const enviarRef = useRef(enviar);
+  enviarRef.current = enviar;
+  useEffect(() => {
+    const preguntar = (e: Event) => {
+      setAbierto(true);
+      enviarRef.current(String((e as CustomEvent).detail ?? ""));
+    };
+    window.addEventListener("taos-preguntar", preguntar);
+    return () => window.removeEventListener("taos-preguntar", preguntar);
+  }, []);
+
   return (
     <>
       <button type="button" className="tao-boton" onClick={() => setAbierto(true)} aria-haspopup="dialog" data-recorrido="tao">
