@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { esNube } from "@/lib/modo";
-import { mensajeDeRegistro, pasaTurnstile, validarRegistro } from "@/lib/registro";
+import { constanciaDeConsentimiento, mensajeDeRegistro, pasaTurnstile, validarRegistro } from "@/lib/registro";
 import { clienteSesion } from "@/lib/sesion-nube";
 
 export async function crearCuenta(f: FormData) {
@@ -14,6 +14,7 @@ export async function crearCuenta(f: FormData) {
     contrasena: String(f.get("contrasena") ?? ""),
     confirmar: String(f.get("confirmar") ?? ""),
     acepta: f.get("acepta") === "on",
+    sensibles: f.get("sensibles") === "on",
   };
   const problema = validarRegistro(datos);
   if (problema) volver(problema);
@@ -21,7 +22,7 @@ export async function crearCuenta(f: FormData) {
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || null;
   if (!(await pasaTurnstile(String(f.get("cf-turnstile-response") ?? "") || null, ip))) volver("No pudimos comprobar que no eres un robot. Recarga la página e intenta de nuevo.");
   const origen = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
-  const { error } = await (await clienteSesion()).auth.signUp({ email: datos.correo, password: datos.contrasena, options: { emailRedirectTo: `${origen}/login?confirmado=1` } });
+  const { error } = await (await clienteSesion()).auth.signUp({ email: datos.correo, password: datos.contrasena, options: { data: constanciaDeConsentimiento(), emailRedirectTo: `${origen}/login?confirmado=1` } });
   const r = mensajeDeRegistro(error);
   volver(r.mensaje, r.ok);
 }

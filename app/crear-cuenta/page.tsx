@@ -41,6 +41,10 @@ export default async function Registro({ searchParams }: { searchParams: Promise
               {TERMINOS ? <a href={TERMINOS} target="_blank">términos</a> : "términos"}. TAOS organiza tu vida; no da consejos médicos ni financieros.
             </span>
           </label>
+          <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14 }}>
+            <input type="checkbox" name="sensibles" required style={{ width: 20, height: 20, minHeight: 0, marginTop: 2 }} />
+            <span>Autorizo de forma expresa que TAOS guarde mis datos sensibles (salud, medicinas, finanzas y documentos) solo para darme el servicio. Puedo borrarlos cuando quiera.</span>
+          </label>
           {SITIO_TURNSTILE && (
             <>
               <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
