@@ -1,3 +1,4 @@
+import { usuarioActual } from "./usuario";
 // S14-B · Guardar tus ajustes sin que un cambio pise a otro.
 // Antes: cada pantalla leía TODO el JSON de ajustes y lo volvía a escribir completo; si dos cosas se guardaban a la vez
 // (una medicina y tu ciudad, o el despertador y "Ya me la tomé"), la última borraba la otra.
@@ -6,7 +7,7 @@
 // vuelve a aplicar el MISMO cambio sobre lo nuevo (hasta 5 veces). Si llega dos veces el mismo guardado (op_id),
 // no se aplica dos veces. Un error al leer nunca se trata como "no hay datos": se detiene sin guardar.
 import { createHash } from "node:crypto";
-import { cliente, idDelDueno } from "./push";
+import { cliente } from "./push";
 
 export type Datos = Record<string, unknown>;
 export type Operacion = { id: string; huella: string };
@@ -27,7 +28,7 @@ export class ConflictoDeGuardado extends Error {}
 type Cliente = Pick<ReturnType<typeof cliente>, "from" | "rpc">;
 
 export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operacion, intentos = 5, db: Cliente = cliente(), usuario?: string): Promise<"ok" | "repetida"> {
-  const uid = usuario ?? (await idDelDueno());
+  const uid = usuario ?? (await usuarioActual());
   for (let i = 0; i < intentos; i++) {
     const leida = await db.from("panel_config").select("datos, version").eq("user_id", uid).maybeSingle();
     if (leida.error) {

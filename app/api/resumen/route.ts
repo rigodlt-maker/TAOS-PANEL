@@ -8,6 +8,9 @@ import { avisoHabitos, leerHabitos } from "@/lib/habitos";
 import { avisoDelDia, enviarPush, type AvisoPush } from "@/lib/push";
 import { construirResumen } from "@/lib/resumen";
 import type { Seccion } from "@/lib/panel";
+import { esNube } from "@/lib/modo";
+import { usuarioDeSesion } from "@/lib/sesion-nube";
+import { paraCadaUsuario } from "@/lib/usuarios-nube";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +19,21 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const secreto = process.env.CRON_SECRET;
   const desdeCron = !!secreto && (await mismaClave(req.headers.get("authorization"), `Bearer ${secreto}`));
-  const desdePanel = await sesionValida((await cookies()).get(COOKIE_SESION)?.value);
+  const desdePanel = esNube() ? !!(await usuarioDeSesion()) : await sesionValida((await cookies()).get(COOKIE_SESION)?.value);
   if (!desdeCron && !desdePanel) return new Response("No autorizado", { status: 401 });
 
   const momento: Momento = new URL(req.url).searchParams.get("momento") === "noche" ? "noche" : "manana";
+  // Nube F2: el cron recorre cada cuenta y manda solo la notificación (en Nube no hay Gmail conectado, D3)
+  if (esNube() && desdeCron) {
+    const ronda = await paraCadaUsuario(async () => {
+      const datos = await cargarPanel();
+      const avisos: AvisoPush[] = [avisoDelDia(momento, datos.hoy, datos.semana.ok ? datos.semana.datos : null, datos.tareas.ok ? datos.tareas.datos : null)];
+      const habitos = momento === "noche" ? avisoHabitos(await leerHabitos().catch(() => ({ lista: [], hechos: {} })), datos.hoy) : null;
+      if (habitos) avisos.push(habitos);
+      return enviarPush(avisos);
+    });
+    return Response.json({ ok: ronda.fallas === 0, momento, usuarios: ronda.usuarios, fallas: ronda.fallas });
+  }
   try {
     const datos = await cargarPanel();
     // Si la IA falla, el resumen se envía igual, sin esa parte
@@ -36,7 +50,9 @@ export async function GET(req: Request) {
       if (habitos) avisos.push(habitos);
       await enviarPush(avisos);
     }
-    await enviarCorreo(await tokenDeAcceso(), CORREO_DESTINO, asunto, html);
+    // En Nube (pedido desde el panel) no hay Gmail: el resumen llega como notificación a tu celular
+    if (esNube()) await enviarPush([avisoDelDia(momento, datos.hoy, datos.semana.ok ? datos.semana.datos : null, datos.tareas.ok ? datos.tareas.datos : null)]);
+    else await enviarCorreo(await tokenDeAcceso(), CORREO_DESTINO, asunto, html);
     if (desdePanel && !desdeCron) return Response.redirect(new URL("/?enviado=1", req.url), 303);
     return Response.json({ ok: true, momento, asunto });
   } catch (e) {

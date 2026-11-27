@@ -1,3 +1,4 @@
+import { esNube } from "@/lib/modo";
 import { revisarLicencia } from "@/lib/licencia";
 
 export const dynamic = "force-dynamic";
@@ -5,7 +6,9 @@ export const dynamic = "force-dynamic";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string; espera?: string }> }) {
   const { error, espera } = await searchParams;
   // Con contraseña configurada (no es modo demostración), primero se revisa el código de compra
-  const licencia = process.env.PANEL_PASSWORD ? await revisarLicencia() : ({ ok: true } as const);
+  // En TAOS Nube no hay código de compra (la licencia es la suscripción) y se entra con tu cuenta TAOS
+  const nube = esNube();
+  const licencia = !nube && process.env.PANEL_PASSWORD ? await revisarLicencia() : ({ ok: true } as const);
   if (!licencia.ok)
     return (
       <main className="login">
@@ -28,9 +31,15 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <form className="tarjeta" method="post" action="/api/login">
         <img className="logo-login" src="/icono-192.png" alt="" width={88} height={88} />
         <h1>Optimizador de Vida</h1>
+        {nube && (
+          <>
+            <label htmlFor="correo">Correo de tu cuenta TAOS</label>
+            <input id="correo" name="correo" type="email" autoComplete="email" autoFocus required />
+          </>
+        )}
         <label htmlFor="clave">Contraseña</label>
-        <input id="clave" name="clave" type="password" autoFocus required />
-        {error && <p className="error">Contraseña incorrecta, intenta de nuevo.</p>}
+        <input id="clave" name="clave" type="password" autoComplete="current-password" autoFocus={!nube} required />
+        {error && <p className="error">{nube ? "Correo o contraseña incorrectos, intenta de nuevo." : "Contraseña incorrecta, intenta de nuevo."}</p>}
         {espera && <p className="error">Demasiados intentos. Por seguridad, espera {Number(espera) || 15} minutos y vuelve a intentar.</p>}
         <button type="submit">Entrar</button>
       </form>

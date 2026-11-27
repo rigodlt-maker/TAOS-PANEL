@@ -1,5 +1,7 @@
 import { ejecutarTick } from "@/lib/despertador";
 import { esDemo } from "@/lib/demo";
+import { esNube } from "@/lib/modo";
+import { paraCadaUsuario } from "@/lib/usuarios-nube";
 import { origenCanonico, verificarTick } from "@/lib/tick-firma";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,13 @@ export async function POST(req: Request) {
   // Antes de leer nada tuyo: firma, hora, turno y destinatario (esta instalación)
   const v = await verificarTick(req);
   if (!v.ok) return new Response(null, { status: v.status, headers: SIN_CACHE });
+  // Nube F2: un solo reloj para todas las cuentas; cada una con su propio turno (panel_tick_ejecuciones va por user_id)
+  if (esNube()) {
+    const ronda = await paraCadaUsuario(() => ejecutarTick(v.tick, origenCanonico()!));
+    const aceptados = ronda.resultados.reduce((t, x) => t + (x.aceptados ?? 0), 0);
+    const pendientes = ronda.resultados.reduce((t, x) => t + (x.pendientes ?? 0), 0);
+    return Response.json({ ok: ronda.fallas === 0, usuarios: ronda.usuarios, fallas: ronda.fallas, aceptados, pendientes }, { headers: SIN_CACHE });
+  }
   const r = await ejecutarTick(v.tick, origenCanonico()!);
   // La respuesta no lleva nombres ni dosis: solo el estado del turno y cuántos avisos
   return Response.json({ ok: r.status < 300, estado: r.estado, aceptados: r.aceptados, pendientes: r.pendientes }, { status: r.status, headers: SIN_CACHE });

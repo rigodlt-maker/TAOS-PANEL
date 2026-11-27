@@ -1,10 +1,13 @@
 // Modo demostración: sin PANEL_PASSWORD el panel abre sin contraseña y muestra agenda, correos y tareas ficticios
 // (para ver la app o grabar videos). Clima y noticias sí son reales. Al poner PANEL_PASSWORD queda protegido.
 import { DESFASE } from "./config";
+import { esNube } from "./modo";
 import { sumarDias } from "./fechas";
 import type { Categoria, Correo, Evento, Tarea } from "./google";
 
-export const esDemo = () => !process.env.PANEL_PASSWORD;
+// Nube F2: en TAOS Nube no hay PANEL_PASSWORD; es demostración solo si falta Supabase
+export const esDemo = () =>
+  esNube() ? !(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() && process.env.SUPABASE_SECRET_KEY?.trim()) : !process.env.PANEL_PASSWORD;
 export const TOKEN_DEMO = "demo";
 
 const a = (fecha: string, hora: string) => `${fecha}T${hora}:00${DESFASE}`;

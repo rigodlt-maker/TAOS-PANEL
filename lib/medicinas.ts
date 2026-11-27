@@ -1,3 +1,4 @@
+import { usuarioActual } from "./usuario";
 // Mis medicinas y suplementos: qué tomas, cuánto (pastilla, sobre, cucharada…) y cada cuántas horas.
 // Se guardan dentro de tus ajustes (panel_config.datos.medicinas), sin SQL nuevo. La foto (opcional) va pequeña, en el mismo lugar.
 // Los avisos llegan de dos formas: alarmas en el calendario de tu celular (siempre suenan) y notificación de la app
@@ -9,7 +10,7 @@ import { esDemo } from "./demo";
 import { fechaLocal, sumarDias } from "./fechas";
 import { guardarDatos, type Operacion } from "./guardar";
 import { ConflictoDeCampos, parche } from "./parche";
-import { cliente, idDelDueno, pushConfigurado } from "./push";
+import { cliente, pushConfigurado } from "./push";
 
 export const UNIDADES = ["pastilla", "cápsula", "tableta", "sobre", "cucharada", "cucharadita", "gotas", "ml", "inyección", "parche", "toma"] as const;
 export type Unidad = (typeof UNIDADES)[number];
@@ -232,7 +233,7 @@ export class LecturaFallida extends Error {}
 export async function leerMedicinasEstricto(): Promise<Medicinas> {
   if (esDemo()) return demo();
   if (!pushConfigurado()) throw new LecturaFallida("sin base de datos");
-  const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
+  const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await usuarioActual()).maybeSingle();
   if (error) throw new LecturaFallida(error.message);
   return limpiarMedicinas((data?.datos as { medicinas?: unknown } | null)?.medicinas);
 }
@@ -242,7 +243,7 @@ export async function leerMedicinasDirecto(): Promise<Medicinas> {
   if (esDemo()) return demo();
   if (!pushConfigurado()) return VACIO;
   try {
-    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
+    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await usuarioActual()).maybeSingle();
     if (error || !data) return VACIO;
     return limpiarMedicinas((data.datos as { medicinas?: unknown } | null)?.medicinas);
   } catch {

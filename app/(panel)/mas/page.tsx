@@ -9,6 +9,7 @@ import { AvisosPush } from "../../avisos-push";
 import { TamanoLetra } from "../../tamano-letra";
 import { Tarjeta } from "../../componentes";
 import { BarraBuscar } from "../../buscador";
+import { MisDatos } from "../../mis-datos";
 import { ErrorSeccion } from "../../error-seccion";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +76,8 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         </span>
         <span style={{ color: "#d4af37" }}>›</span>
       </a>
+      <MisDatos />
+
       <Tarjeta titulo="🔠 Pantalla" id="pantalla">
         <p className="tenue" style={{ fontSize: 14, marginTop: 0 }}>
           Tamaño de la letra en este celular.

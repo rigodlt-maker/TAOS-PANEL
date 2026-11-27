@@ -1,3 +1,4 @@
+import { esNube } from "./modo";
 import { correosDemo, esDemo, eventosDemo, tareasDemo, TOKEN_DEMO } from "./demo";
 import { ZONA } from "./config";
 import { googleConfigurado, promoverAnterior, tokensGuardados } from "./google-cuenta";
@@ -21,6 +22,8 @@ const pedirAcceso = (refresh: string) =>
 // Cambia el Refresh token por un token de acceso temporal (dura ~1 hora)
 export async function tokenDeAcceso(): Promise<string> {
   if (esDemo()) return TOKEN_DEMO;
+  // Nube F2 (D3): la conexión con Google es de cada instalación propia; en TAOS Nube todavía no está
+  if (esNube()) throw new Error("La agenda, el correo y las tareas de Google todavía no están en TAOS Nube.");
   if (!googleConfigurado()) throw new Error("Falta conectar Google: sigue el anexo de Google de la guía (Más › Conectar con Google).");
   const { principal, anterior } = await tokensGuardados();
   if (!principal) throw new Error("Falta conectar tu cuenta de Google: entra a Más y toca «Conectar con Google».");

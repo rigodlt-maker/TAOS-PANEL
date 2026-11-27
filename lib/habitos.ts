@@ -1,10 +1,11 @@
+import { usuarioActual } from "./usuario";
 // Mis hábitos: palomitas diarias y rachas. Se guardan dentro de tus ajustes (panel_config.datos.habitos),
 // así no hace falta SQL nuevo. Solo se guardan los últimos 120 días de palomitas.
 import { cache } from "react";
 import { esDemo } from "./demo";
 import { fechaLocal, sumarDias } from "./fechas";
 import { guardarDatos, type Operacion } from "./guardar";
-import { cliente, idDelDueno, pushConfigurado } from "./push";
+import { cliente, pushConfigurado } from "./push";
 
 export type Habito = { id: string; nombre: string; icono: string };
 export type Habitos = { lista: Habito[]; hechos: Record<string, string[]> };
@@ -116,7 +117,7 @@ export const leerHabitos = cache(async (): Promise<Habitos> => {
   if (esDemo()) return demo();
   if (!pushConfigurado()) return VACIO;
   try {
-    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
+    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await usuarioActual()).maybeSingle();
     if (error || !data) return VACIO;
     return limpiarHabitos((data.datos as { habitos?: unknown } | null)?.habitos);
   } catch {

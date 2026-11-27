@@ -1,10 +1,12 @@
+import { esDemo } from "./demo";
+import { usuarioActual } from "./usuario";
 // Tus datos del panel: nombre, ciudad (para el clima) y lugares frecuentes. Se guardan en Supabase (tabla panel_config)
 // y se cambian en la pantalla Ajustes. Sin configurar, el panel funciona con valores neutros.
 import { cache } from "react";
 import { limpiarAuto, type MiAuto } from "./no-circula";
 import { guardarDatos } from "./guardar";
 import { parche } from "./parche";
-import { cliente, idDelDueno, pushConfigurado } from "./push";
+import { cliente, pushConfigurado } from "./push";
 
 export type Lugar = { nombre: string; icono: string; direccion: string };
 export type Ciudad = { nombre: string; lat: number; lon: number };
@@ -29,11 +31,11 @@ export function limpiar(d: unknown): Preferencias {
 
 export const preferencias = cache(async (): Promise<Preferencias> => {
   // Modo demostración: datos ficticios
-  if (!process.env.PANEL_PASSWORD)
+  if (esDemo())
     return { nombre: "Rodrigo", ciudad: CIUDAD_BASE, configurado: true, auto: { terminacion: 6, holograma: "1" }, lugares: [{ nombre: "Casa", icono: "🏡", direccion: "Zócalo, Ciudad de México" }, { nombre: "Oficina", icono: "💼", direccion: "Paseo de la Reforma 222, Ciudad de México" }, { nombre: "Gimnasio", icono: "🏋️", direccion: "Parque México, Condesa, Ciudad de México" }] };
   if (!pushConfigurado()) return BASE;
   try {
-    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await idDelDueno()).maybeSingle();
+    const { data, error } = await cliente().from("panel_config").select("datos").eq("user_id", await usuarioActual()).maybeSingle();
     if (error || !data) return BASE;
     return limpiar(data.datos);
   } catch {

@@ -1,6 +1,8 @@
+import { esNube } from "./modo";
+import { usuarioActual } from "./usuario";
 // Conexión con Google desde la app: el botón "Conectar con Google" guarda tu permiso (refresh token)
 // en tu Supabase. Así no hay que conseguirlo a mano. Si no hay, se usa GOOGLE_REFRESH_TOKEN de Vercel.
-import { cliente, idDelDueno, pushConfigurado } from "./push";
+import { cliente, pushConfigurado } from "./push";
 
 export const ALCANCES = [
   "https://www.googleapis.com/auth/calendar.readonly",
@@ -11,7 +13,8 @@ export const ALCANCES = [
   "https://www.googleapis.com/auth/tasks.readonly",
 ];
 
-export const googleConfigurado = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+// Nube F2 (D3): en TAOS Nube no se conecta Google (cada instalación propia usa su propio proyecto de Google)
+export const googleConfigurado = () => !esNube() && !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
 // S03: la conexión vive en su propia tabla (panel_google), que solo lee el servidor. Si todavía no se corre el SQL de
 // seguridad 1.3, se lee la columna anterior. Primero la que guardó el botón; si no hay, GOOGLE_REFRESH_TOKEN de Vercel.
@@ -26,7 +29,7 @@ export async function tokensGuardados(): Promise<TokensGoogle> {
   const deVercel = process.env.GOOGLE_REFRESH_TOKEN || null;
   if (!pushConfigurado()) return { principal: deVercel, anterior: null };
   const db = cliente();
-  const uid = await idDelDueno();
+  const uid = await usuarioActual();
   const nueva = await db.from("panel_google").select("refresh_token, refresh_anterior").eq("user_id", uid).maybeSingle();
   if (!nueva.error) return { principal: (nueva.data?.refresh_token as string | undefined) || deVercel, anterior: (nueva.data?.refresh_anterior as string | null | undefined) ?? null };
   if (!faltaTabla(nueva.error)) throw new ErrorGoogleGuardado("No se pudo leer tu conexión con Google; intenta de nuevo en un momento.");
@@ -42,13 +45,13 @@ export async function refreshGuardado(): Promise<string | null> {
 // Si Google rechaza la principal y la anterior sí sirve (S03-R), la anterior pasa a ser la principal
 export async function promoverAnterior(token: string) {
   const db = cliente();
-  const r = await db.from("panel_google").update({ refresh_token: token, refresh_anterior: null, updated_at: new Date().toISOString() }).eq("user_id", await idDelDueno()).eq("refresh_anterior", token);
+  const r = await db.from("panel_google").update({ refresh_token: token, refresh_anterior: null, updated_at: new Date().toISOString() }).eq("user_id", await usuarioActual()).eq("refresh_anterior", token);
   if (r.error) console.error("Google: no se pudo actualizar la conexión", r.error.code);
 }
 
 export async function guardarRefresh(token: string | null) {
   const db = cliente();
-  const uid = await idDelDueno();
+  const uid = await usuarioActual();
   const r = token
     ? await db.from("panel_google").upsert({ user_id: uid, refresh_token: token, refresh_anterior: null, updated_at: new Date().toISOString() })
     : await db.from("panel_google").delete().eq("user_id", uid);

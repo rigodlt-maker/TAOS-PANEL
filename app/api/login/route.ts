@@ -1,8 +1,11 @@
 import { claveCorrecta, COOKIE_SESION, crearSesion, DURACION_SESION } from "@/lib/auth";
 import { ipDe, liberarIntento, reservarIntento } from "@/lib/intentos";
 import { revisarLicencia } from "@/lib/licencia";
+import { esNube } from "@/lib/modo";
+import { clienteSesion } from "@/lib/sesion-nube";
 
 export async function POST(req: Request) {
+  if (esNube()) return entrarNube(req);
   const form = await req.formData();
   const clave = String(form.get("clave") ?? "").slice(0, 200);
   // S17: el intento se aparta ANTES de revisar la contraseña (así 20 intentos al mismo tiempo no pasan los 20)
@@ -42,4 +45,22 @@ a{display:block;text-align:center;min-height:48px;line-height:48px;border-radius
     status: noDisponible ? 503 : 429,
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "Retry-After": String(segundos) },
   });
+}
+
+// Nube F2 · Entrar con tu cuenta TAOS (correo y contraseña de Supabase Auth, la misma de las otras apps).
+// Mismo límite de intentos que con PANEL_PASSWORD. Sin código de compra: en Nube la licencia es la suscripción.
+async function entrarNube(req: Request) {
+  const form = await req.formData();
+  const correo = String(form.get("correo") ?? "").trim().toLowerCase().slice(0, 200);
+  const clave = String(form.get("clave") ?? "").slice(0, 200);
+  const intento = await reservarIntento(ipDe(req));
+  if (!intento.permitido) return pantallaEspera(intento.esperaSeg, !!intento.noDisponible);
+  const { error } = await (await clienteSesion()).auth.signInWithPassword({ email: correo, password: clave });
+  if (error) {
+    await new Promise((r) => setTimeout(r, 2000));
+    return Response.redirect(new URL("/login?error=1", req.url), 303);
+  }
+  await liberarIntento(intento);
+  // Las cookies de la sesión las escribe clienteSesion() en esta misma respuesta
+  return Response.redirect(new URL("/", req.url), 303);
 }

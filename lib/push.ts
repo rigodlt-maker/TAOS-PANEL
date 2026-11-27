@@ -1,4 +1,6 @@
 import { createECDH, createHash, createHmac } from "node:crypto";
+import { usuarioActual } from "./usuario";
+import { esDemo } from "./demo";
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 import { eventosDelDia } from "./agenda";
@@ -63,7 +65,7 @@ export function soloDominio(url: string): string {
 export const MENSAJE_DEMO = "Estás en modo demostración: aquí no se guarda nada. Pon PANEL_PASSWORD en Vercel para usar tus datos.";
 
 export function cliente() {
-  if (!process.env.PANEL_PASSWORD) throw new Error(MENSAJE_DEMO);
+  if (esDemo()) throw new Error(MENSAJE_DEMO);
   if (!pushConfigurado()) throw new Error(`Falta en Vercel: ${variablesFaltantes().join(", ")}.`);
   return createClient(soloDominio(process.env.NEXT_PUBLIC_SUPABASE_URL!), process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
 }
@@ -90,16 +92,17 @@ function revisar<T>(r: { data: T; error: { message: string } | null }): T {
 }
 
 export async function suscripciones(): Promise<SuscripcionPush[]> {
-  return revisar(await cliente().from("push_subscriptions").select("endpoint, p256dh, auth, dispositivo").eq("user_id", await idDelDueno()).eq("app", APP_PUSH)) ?? [];
+  return revisar(await cliente().from("push_subscriptions").select("endpoint, p256dh, auth, dispositivo").eq("user_id", await usuarioActual()).eq("app", APP_PUSH)) ?? [];
 }
 
 export async function guardarSuscripcion(s: SuscripcionPush) {
   // Si el mismo celular se vuelve a suscribir, se actualizan sus llaves
-  revisar(await cliente().from("push_subscriptions").upsert({ ...s, user_id: await idDelDueno(), app: APP_PUSH }, { onConflict: "endpoint" }));
+  revisar(await cliente().from("push_subscriptions").upsert({ ...s, user_id: await usuarioActual(), app: APP_PUSH }, { onConflict: "endpoint" }));
 }
 
 export async function borrarSuscripcion(endpoint: string) {
-  revisar(await cliente().from("push_subscriptions").delete().eq("endpoint", endpoint).eq("app", APP_PUSH));
+  // Nube F2: solo se puede quitar un celular TUYO (con el endpoint de otra persona no pasa nada)
+  revisar(await cliente().from("push_subscriptions").delete().eq("endpoint", endpoint).eq("user_id", await usuarioActual()).eq("app", APP_PUSH));
 }
 
 // Manda el aviso a todos los celulares suscritos. Nunca lanza error: si falla, el correo sigue saliendo.

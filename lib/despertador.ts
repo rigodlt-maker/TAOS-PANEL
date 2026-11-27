@@ -1,3 +1,4 @@
+import { usuarioActual } from "./usuario";
 // S14-C · Despertador de medicinas: cada 15 minutos el servidor de TAOS llama (firmado) y aquí se manda cada aviso
 // que ya tocó. Orden seguro:
 //   1. Tomar el turno de 15 minutos (si otro ya lo tiene o ya lo terminó, no se repite).
@@ -8,7 +9,7 @@
 // y el servidor se cae antes de anotarlo, ese aviso puede volver a llegar una vez. Nunca se marca una medicina como tomada.
 import { horarios, hora12, leerMedicinasEstricto, porAvisar, revisionDe, textoDosis, tomada, firmar, type Medicina, type Medicinas } from "./medicinas";
 import { DESFASE } from "./config";
-import { cliente, enviarA, idDelDueno, idDispositivo, suscripciones, type AvisoPush, type SuscripcionPush } from "./push";
+import { cliente, enviarA, idDispositivo, suscripciones, type AvisoPush, type SuscripcionPush } from "./push";
 import type { Tick } from "./tick-firma";
 
 export const LEASE_SEG = 120; // mayor que lo que tarda un lote (envíos en paralelo con 10 s de límite cada uno)
@@ -44,7 +45,7 @@ const deps = (): Dependencias => ({
   suscripciones,
   enviar: enviarA,
   limpiar,
-  usuario: idDelDueno,
+  usuario: usuarioActual,
   reloj: Date.now,
 });
 
@@ -139,9 +140,11 @@ export async function ejecutarTick(tick: Tick, origen: string, ahora = Date.now(
 async function limpiar(ahora: number) {
   const db = cliente();
   const hace = (dias: number) => new Date(ahora - dias * 86_400_000).toISOString();
+  // Nube F2: cada turno limpia solo lo viejo de SU persona (panel_intentos no tiene user_id: son intentos por IP)
+  const uid = await usuarioActual();
   await Promise.allSettled([
-    db.from("panel_operaciones").delete().lt("creado", hace(30)),
-    db.from("panel_medicina_avisos").delete().lt("actualizado", hace(30)),
+    db.from("panel_operaciones").delete().eq("user_id", uid).lt("creado", hace(30)),
+    db.from("panel_medicina_avisos").delete().eq("user_id", uid).lt("actualizado", hace(30)),
     db.from("panel_intentos").delete().lt("actualizado", hace(2)),
   ]);
 }
@@ -152,7 +155,7 @@ export async function estadoDespertador(): Promise<{ faltaSql: boolean; ultima: 
     const { data, error } = await cliente()
       .from("panel_tick_ejecuciones")
       .select("actualizado, estado, detalle")
-      .eq("user_id", await idDelDueno())
+      .eq("user_id", await usuarioActual())
       .order("actualizado", { ascending: false })
       .limit(1);
     if (error) return { faltaSql: faltaSql(error), ultima: null };
