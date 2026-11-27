@@ -105,6 +105,10 @@ export async function borrarSuscripcion(endpoint: string) {
 // Manda el aviso a todos los celulares suscritos. Nunca lanza error: si falla, el correo sigue saliendo.
 // aceptados[i] = a cuántos celulares llegó el aviso i (lo aceptó el servicio de avisos). 0 = no salió: se puede reintentar.
 // "limite" evita saturar el celular con avisos del resumen; las medicinas mandan todos (ninguno se descarta en silencio).
+// Respuestas del servicio de notificaciones que significan «esta suscripción ya no sirve»:
+// 404/410 (desinstalaste la app o quitaste el permiso) y 403 (se hizo con otra llave: al abrir la app se renueva sola)
+export const sinValidez = (codigo: number | undefined) => codigo === 404 || codigo === 410 || codigo === 403;
+
 export async function enviarPush(avisos: AvisoPush | AvisoPush[], limite = 6): Promise<{ enviados: number; fallidos: number; aceptados: number[] }> {
   const lista = (Array.isArray(avisos) ? avisos : [avisos]).slice(0, limite);
   const llaves = llavesVapid();
@@ -124,8 +128,8 @@ export async function enviarPush(avisos: AvisoPush | AvisoPush[], limite = 6): P
       } catch (e) {
         resultado.fallidos++;
         const codigo = (e as { statusCode?: number }).statusCode;
-        // 404 o 410: el celular ya no acepta avisos (desinstalaste la app o quitaste el permiso)
-        if (codigo === 404 || codigo === 410) {
+        // 404/410: el celular ya no acepta avisos. 403: la suscripción se hizo con otra llave (se cambió la llave secreta)
+        if (sinValidez(codigo)) {
           await borrarSuscripcion(s.endpoint).catch(() => {});
           break;
         }
@@ -153,7 +157,7 @@ export async function enviarA(s: SuscripcionPush, aviso: AvisoPush): Promise<"ac
     return "aceptado";
   } catch (e) {
     const codigo = (e as { statusCode?: number }).statusCode;
-    if (codigo === 404 || codigo === 410) {
+    if (sinValidez(codigo)) {
       await borrarSuscripcion(s.endpoint).catch(() => {});
       return "invalido";
     }
