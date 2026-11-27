@@ -8,17 +8,20 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { DESTINOS, GRUPOS, buscarDestinos, type Destino } from "@/lib/destinos";
+import { esRutaGoogle } from "@/lib/secciones-google";
 
 const preguntarATao = (pregunta: string) => window.dispatchEvent(new CustomEvent("taos-preguntar", { detail: pregunta }));
 
-export function Buscador() {
+export function Buscador({ sinGoogle = false }: { sinGoogle?: boolean }) {
+  // Nube F2: sin Google, Agenda, Correo y Tareas no aparecen en el buscador
+  const destinos = useMemo(() => (sinGoogle ? DESTINOS.filter((d) => !esRutaGoogle(d.ruta)) : DESTINOS), [sinGoogle]);
   const [abierto, setAbierto] = useState(false);
   const [montado, setMontado] = useState(false);
   const [consulta, setConsulta] = useState("");
   const entrada = useRef<HTMLInputElement>(null);
   const ruta = usePathname();
   const router = useRouter();
-  const resultados = useMemo(() => buscarDestinos(consulta), [consulta]);
+  const resultados = useMemo(() => buscarDestinos(consulta, destinos), [consulta, destinos]);
 
   useEffect(() => setMontado(true), []);
   useEffect(() => setAbierto(false), [ruta]);
@@ -108,7 +111,7 @@ export function Buscador() {
                   GRUPOS.map((g) => (
                     <section key={g}>
                       <h3 className="buscador-grupo">{g}</h3>
-                      <ul className="buscador-lista">{DESTINOS.filter((d) => d.grupo === g).map(fila)}</ul>
+                      <ul className="buscador-lista">{destinos.filter((d) => d.grupo === g).map(fila)}</ul>
                     </section>
                   ))
                 )}

@@ -1,7 +1,7 @@
 "use client";
 
 // Barra inferior y botón flotante, con el mismo estilo TAOS que Finanzas y Segundo Cerebro
-import { CalendarDays, CalendarPlus, LayoutGrid, ListChecks, Mail, Sun, type LucideIcon } from "lucide-react";
+import { CalendarDays, CalendarPlus, LayoutGrid, ListChecks, Mail, Pill, Sprout, Sun, type LucideIcon } from "lucide-react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,13 @@ const SECCIONES = [
   { ruta: "/agenda", nombre: "Agenda", icono: CalendarDays },
   { ruta: "/correo", nombre: "Correo", icono: Mail },
   { ruta: "/tareas", nombre: "Tareas", icono: ListChecks },
+  { ruta: "/mas", nombre: "Menú", icono: LayoutGrid },
+];
+// Nube F2: sin Google, la barra lleva lo que sí está (hábitos y medicinas) en lugar de Agenda, Correo y Tareas
+const SECCIONES_NUBE = [
+  { ruta: "/", nombre: "Hoy", icono: Sun },
+  { ruta: "/habitos", nombre: "Hábitos", icono: Sprout },
+  { ruta: "/medicinas", nombre: "Medicinas", icono: Pill },
   { ruta: "/mas", nombre: "Menú", icono: LayoutGrid },
 ];
 
@@ -24,13 +31,14 @@ function Contenido({ icono: Icono, nombre, activa }: { icono: LucideIcon; nombre
   );
 }
 
-export function Navegacion() {
+export function Navegacion({ sinGoogle = false }: { sinGoogle?: boolean }) {
   const actual = usePathname();
   const activa = (ruta: string) => (ruta === "/" ? actual === "/" : actual.startsWith(ruta));
   // A1 (1.3.0): el botón flotante es siempre solo el ícono, para no tapar nada; en Medicinas no sale (tiene sus propios botones)
   return (
     <>
-      {!actual.startsWith("/medicinas") && (
+      {/* El botón de «Agregar un evento» abre Google Calendar: en Nube no sale */}
+      {!sinGoogle && !actual.startsWith("/medicinas") && (
         <div className="fab-zona">
           <div>
             <a className="fab fab-solo" href="https://calendar.google.com/calendar/r/eventedit" target="_blank" data-recorrido="flotante" aria-label="Agregar un evento" title="Agregar un evento">
@@ -41,7 +49,7 @@ export function Navegacion() {
       )}
       <nav className="barra" aria-label="Secciones">
         <ul>
-          {SECCIONES.map((s) => (
+          {(sinGoogle ? SECCIONES_NUBE : SECCIONES).map((s) => (
             <li key={s.ruta}>
               <Link href={s.ruta} aria-current={activa(s.ruta) ? "page" : undefined} data-recorrido={s.ruta}>
                 <Contenido icono={s.icono} nombre={s.nombre} activa={activa(s.ruta)} />

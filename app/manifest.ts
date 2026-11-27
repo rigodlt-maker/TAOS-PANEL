@@ -1,3 +1,4 @@
+import { esNube } from "@/lib/modo";
 import type { MetadataRoute } from "next";
 import { esDemo } from "@/lib/demo";
 
@@ -21,10 +22,16 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: `${ico}-maskable-512.png`, sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     // Atajos: al dejar presionado el ícono de la app (Android) aparecen estos accesos directos
-    shortcuts: [
-      { name: "Agenda", short_name: "Agenda", url: "/agenda" },
-      { name: "Correo", short_name: "Correo", url: "/correo" },
-      { name: "Tareas", short_name: "Tareas", url: "/tareas" },
-    ],
+    // Nube F2: sin Google, los atajos son Hábitos y Medicinas
+    shortcuts: esNube()
+      ? [
+          { name: "Hábitos", short_name: "Hábitos", url: "/habitos" },
+          { name: "Medicinas", short_name: "Medicinas", url: "/medicinas" },
+        ]
+      : [
+          { name: "Agenda", short_name: "Agenda", url: "/agenda" },
+          { name: "Correo", short_name: "Correo", url: "/correo" },
+          { name: "Tareas", short_name: "Tareas", url: "/tareas" },
+        ],
   };
 }

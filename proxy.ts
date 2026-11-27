@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { COOKIE_SESION, sesionValida } from "@/lib/auth";
 import { esDemo } from "@/lib/demo";
 import { esNube } from "@/lib/modo";
+import { esRutaGoogle } from "@/lib/secciones-google";
 import { LLAVE_PUBLICA, URL_SUPABASE } from "@/lib/sesion-nube";
 
 // Protege todo el panel con contraseña
@@ -20,7 +21,7 @@ export const config = {
 // Nube F2 · Con tu cuenta TAOS (Supabase Auth): renueva la sesión en cada visita; sin sesión, a la entrada
 async function proxyNube(req: NextRequest) {
   // Demostración (sin Supabase): no hay sesiones que revisar
-  if (esDemo()) return NextResponse.next();
+  if (esDemo()) return esRutaGoogle(req.nextUrl.pathname) ? NextResponse.redirect(new URL("/", req.url)) : NextResponse.next();
   let respuesta = NextResponse.next({ request: req });
   const db = createServerClient(URL_SUPABASE(), LLAVE_PUBLICA(), {
     cookies: {
@@ -33,5 +34,8 @@ async function proxyNube(req: NextRequest) {
     },
   });
   const { data } = await db.auth.getClaims();
-  return data?.claims ? respuesta : NextResponse.redirect(new URL("/login", req.url));
+  if (!data?.claims) return NextResponse.redirect(new URL("/login", req.url));
+  // Sin Google en Nube: Agenda, Correo y Tareas (y sus rutas de datos) no existen; se va a Hoy
+  if (esRutaGoogle(req.nextUrl.pathname) || req.nextUrl.pathname.startsWith("/api/correo")) return NextResponse.redirect(new URL("/", req.url));
+  return respuesta;
 }

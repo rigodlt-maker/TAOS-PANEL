@@ -1,3 +1,4 @@
+import { esNube } from "@/lib/modo";
 import { Suspense } from "react";
 import { alertasCruzadas, eventosDelDia } from "@/lib/agenda";
 import { fechaLarga, horaActual, horaLocal, sumarDias } from "@/lib/fechas";
@@ -126,27 +127,30 @@ export default async function Hoy({ searchParams }: { searchParams: Promise<{ en
         </Tarjeta>
       )}
 
-      <Tarjeta titulo="Lo que sigue hoy" extra={<a href="/agenda">Ver agenda</a>}>
-        {!semana.ok ? (
-          <ErrorSeccion error={semana.error} detalle={semana.detalle} />
-        ) : siguientes.length === 0 ? (
-          <p className="tenue">Ya no tienes más eventos hoy.</p>
-        ) : (
-          <ul>
-            {siguientes.map((e, i) => (
-              <li key={i}>
-                <a className="fila" href={e.enlace} target="_blank">
-                  <span>
-                    <strong>{e.titulo}</strong>
-                    {e.lugar && <span className="tenue recorte" style={{ display: "block" }}>{e.lugar}</span>}
-                  </span>
-                  <span className="tenue">{horaLocal(e.inicio)}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Tarjeta>
+      {/* Nube F2: sin Google no hay agenda que mostrar */}
+      {!esNube() && (
+        <Tarjeta titulo="Lo que sigue hoy" extra={<a href="/agenda">Ver agenda</a>}>
+          {!semana.ok ? (
+            <ErrorSeccion error={semana.error} detalle={semana.detalle} />
+          ) : siguientes.length === 0 ? (
+            <p className="tenue">Ya no tienes más eventos hoy.</p>
+          ) : (
+            <ul>
+              {siguientes.map((e, i) => (
+                <li key={i}>
+                  <a className="fila" href={e.enlace} target="_blank">
+                    <span>
+                      <strong>{e.titulo}</strong>
+                      {e.lugar && <span className="tenue recorte" style={{ display: "block" }}>{e.lugar}</span>}
+                    </span>
+                    <span className="tenue">{horaLocal(e.inicio)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Tarjeta>
+      )}
     </div>
   );
 }

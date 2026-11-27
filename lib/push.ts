@@ -1,3 +1,4 @@
+import { esNube } from "./modo";
 import { createECDH, createHash, createHmac } from "node:crypto";
 import { usuarioActual } from "./usuario";
 import { esDemo } from "./demo";
@@ -200,7 +201,7 @@ export function avisoDelDia(momento: "manana" | "noche", hoy: string, eventos: E
   return {
     titulo: temprano ? `🌙 Mañana empiezas temprano: ${horaLocal(temprano.inicio)}` : delDia.length ? `🌙 Mañana: ${plural(delDia.length, "evento", "eventos")}` : "🌙 Mañana no tienes eventos",
     cuerpo: partes.join(". ") || (eventos ? "Descansa. 😴" : "No se pudo leer tu agenda; ábrela para revisar."),
-    url: "/agenda",
+    url: esNube() ? "/" : "/agenda",
     etiqueta: "manana",
   };
 }

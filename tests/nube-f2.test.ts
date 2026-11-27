@@ -92,3 +92,13 @@ test("cada consulta del Optimizador a tablas con datos de personas lleva user_id
   }
   assert.deepEqual(faltan, []);
 });
+
+test("Nube F2 · sin Google: se reconocen las rutas de Agenda, Correo, Tareas y «Conectar Google» (y nada más)", async () => {
+  const { esRutaGoogle } = await import("../lib/secciones-google");
+  for (const r of ["/agenda", "/agenda?dia=2026-11-28", "/correo", "/tareas", "/mas#google"]) assert.equal(esRutaGoogle(r), true, r);
+  for (const r of ["/", "/habitos", "/medicinas", "/mas", "/mas#avisos", "/agendas"]) assert.equal(esRutaGoogle(r), false, r);
+  const { DESTINOS } = await import("../lib/destinos");
+  const visibles = DESTINOS.filter((d) => !esRutaGoogle(d.ruta)).map((d) => d.ruta);
+  assert.ok(!visibles.some((r) => /agenda|correo|tareas|google/.test(r)), JSON.stringify(visibles));
+  assert.ok(visibles.includes("/habitos") && visibles.includes("/medicinas"));
+});

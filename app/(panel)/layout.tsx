@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { EJEMPLOS_TAO } from "@/lib/tao";
 import { Navegacion } from "../navegacion";
+import { esNube } from "@/lib/modo";
+import { esRutaGoogle } from "@/lib/secciones-google";
 import { Recorrido, type Paso } from "../recorrido";
 import { Campana } from "../campana";
 import { Actualizacion } from "../actualizacion";
@@ -22,6 +24,9 @@ const RECORRIDO: Paso[] = [
 ];
 
 export default function LayoutPanel({ children }: { children: React.ReactNode }) {
+  // Nube F2: sin Google, se esconden Agenda, Correo y Tareas (y el botón de evento) en todas partes
+  const sinGoogle = esNube();
+  const pasos = sinGoogle ? RECORRIDO.filter((p) => !(p.donde && (esRutaGoogle(p.donde) || p.donde === "flotante"))) : RECORRIDO;
   return (
     <div className="app">
       <header className="encabezado">
@@ -30,7 +35,7 @@ export default function LayoutPanel({ children }: { children: React.ReactNode })
           <span>Optimizador de Vida</span>
         </a>
         <div className="encabezado-derecha">
-          <Buscador />
+          <Buscador sinGoogle={sinGoogle} />
           <Campana ajustes="/mas" />
           <BotonTao ejemplos={EJEMPLOS_TAO} />
         </div>
@@ -38,9 +43,9 @@ export default function LayoutPanel({ children }: { children: React.ReactNode })
       <Actualizacion repo="taos-panel" />
       <main>{children}</main>
       <Suspense>
-        <Recorrido pasos={RECORRIDO} />
+        <Recorrido pasos={pasos} />
       </Suspense>
-      <Navegacion />
+      <Navegacion sinGoogle={sinGoogle} />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { esNube } from "@/lib/modo";
 import { Reintentar } from "@/app/reintentar";
 import { headers } from "next/headers";
 import { esDemo } from "@/lib/demo";
@@ -37,7 +38,8 @@ export default async function Mas({ searchParams }: { searchParams: Promise<{ go
         ⚙️ Ajustes: nombre, ciudad y lugares
       </a>
 
-      {!esDemo() && (
+      {/* Nube F2 (D3): en TAOS Nube no se conecta Google */}
+      {!esDemo() && !esNube() && (
         <Tarjeta titulo="🔗 Google: agenda, correo y tareas" id="google">
           {google === "ok" && <p className="aviso">✅ ¡Listo! Tu cuenta de Google quedó conectada.</p>}
           {google && google !== "ok" && <p className="error">⚠️ {google}</p>}
