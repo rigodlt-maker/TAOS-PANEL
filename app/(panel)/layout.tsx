@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { EJEMPLOS_TAO } from "@/lib/tao";
 import { Navegacion } from "../navegacion";
+import { AvisoSuscripcion } from "../aviso-suscripcion";
 import { esNube } from "@/lib/modo";
 import { esRutaGoogle } from "@/lib/secciones-google";
 import { Recorrido, type Paso } from "../recorrido";
@@ -41,7 +42,10 @@ export default function LayoutPanel({ children }: { children: React.ReactNode })
         </div>
       </header>
       <Actualizacion repo="taos-panel" />
-      <main>{children}</main>
+      <main>
+        <AvisoSuscripcion />
+        {children}
+      </main>
       <Suspense>
         <Recorrido pasos={pasos} />
       </Suspense>

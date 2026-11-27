@@ -1,3 +1,7 @@
+import { esNube } from "./modo";
+import { mensajeDeEstado, puedeEscribir } from "./suscripcion";
+import { suscripcionDe } from "./suscripcion-servidor";
+import { enTrabajoAutomatico } from "./usuario";
 import { usuarioActual } from "./usuario";
 // S14-B · Guardar tus ajustes sin que un cambio pise a otro.
 // Antes: cada pantalla leía TODO el JSON de ajustes y lo volvía a escribir completo; si dos cosas se guardaban a la vez
@@ -28,6 +32,11 @@ export class ConflictoDeGuardado extends Error {}
 type Cliente = Pick<ReturnType<typeof cliente>, "from" | "rpc">;
 
 export async function guardarDatos(cambio: (datos: Datos) => Datos, op?: Operacion, intentos = 5, db: Cliente = cliente(), usuario?: string): Promise<"ok" | "repetida"> {
+  // Nube F4: sin suscripción vigente, solo lectura (los trabajos automáticos y «Ya me la tomé» del aviso no pasan por aquí)
+  if (esNube() && !usuario && !enTrabajoAutomatico()) {
+    const s = await suscripcionDe(cliente(), await usuarioActual()).catch(() => null);
+    if (!puedeEscribir(s)) throw new Error(mensajeDeEstado(s) ?? "Necesitas una suscripción activa para guardar cambios.");
+  }
   const uid = usuario ?? (await usuarioActual());
   for (let i = 0; i < intentos; i++) {
     const leida = await db.from("panel_config").select("datos, version").eq("user_id", uid).maybeSingle();

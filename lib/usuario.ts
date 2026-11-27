@@ -10,6 +10,8 @@ import { usuarioDeSesion } from "./sesion-nube";
 const enCurso = new AsyncLocalStorage<string>();
 
 export const conUsuario = <T>(id: string, trabajo: () => Promise<T>) => enCurso.run(id, trabajo);
+// ¿Es un trabajo automático (resumen, despertador)? Esos no pasan por el candado de la suscripción
+export const enTrabajoAutomatico = () => !!enCurso.getStore();
 
 export async function usuarioActual(): Promise<string> {
   const fijo = enCurso.getStore();

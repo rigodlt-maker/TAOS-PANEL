@@ -460,3 +460,6 @@ html[data-letra="muy-grande"] main { zoom: 1.25; }
 .buscador-tao svg { color: var(--acento); flex-shrink: 0; }
 .buscador-tao span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .buscador-barra { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 0 16px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); color: var(--tenue); font-weight: 400; font-size: 16px; }
+
+/* Nube F4 · «Ya pagué: recuperar mi suscripción» */
+.enlace-boton { background: none; border: 0; color: var(--acento); min-height: 44px; font-size: 14px; cursor: pointer; }
