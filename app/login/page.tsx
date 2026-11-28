@@ -3,8 +3,8 @@ import { revisarLicencia } from "@/lib/licencia";
 
 export const dynamic = "force-dynamic";
 
-export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string; espera?: string; confirmado?: string }> }) {
-  const { error, espera, confirmado } = await searchParams;
+export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string; espera?: string; confirmado?: string; aviso?: string }> }) {
+  const { error, espera, confirmado, aviso } = await searchParams;
   // Con contraseña configurada (no es modo demostración), primero se revisa el código de compra
   // En TAOS Nube no hay código de compra (la licencia es la suscripción) y se entra con tu cuenta TAOS
   const nube = esNube();
@@ -42,6 +42,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
         {error && <p className="error">{nube ? "Correo o contraseña incorrectos, intenta de nuevo." : "Contraseña incorrecta, intenta de nuevo."}</p>}
         {espera && <p className="error">Demasiados intentos. Por seguridad, espera {Number(espera) || 15} minutos y vuelve a intentar.</p>}
         <button type="submit">Entrar</button>
+        {aviso && nube && <p className="error">{aviso.slice(0, 200)}</p>}
         {confirmado && nube && <p className="aviso">✅ Tu cuenta quedó confirmada. Entra con tu correo y contraseña.</p>}
         {nube && (
           <p className="tenue" style={{ fontSize: 14, textAlign: "center", margin: 0 }}>

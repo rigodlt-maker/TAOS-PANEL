@@ -22,7 +22,7 @@ export async function crearCuenta(f: FormData) {
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || null;
   if (!(await pasaTurnstile(String(f.get("cf-turnstile-response") ?? "") || null, ip))) volver("No pudimos comprobar que no eres un robot. Recarga la página e intenta de nuevo.");
   const origen = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
-  const { error } = await (await clienteSesion()).auth.signUp({ email: datos.correo, password: datos.contrasena, options: { data: constanciaDeConsentimiento(), emailRedirectTo: `${origen}/login?confirmado=1` } });
+  const { error } = await (await clienteSesion()).auth.signUp({ email: datos.correo, password: datos.contrasena, options: { data: constanciaDeConsentimiento(), emailRedirectTo: `${origen}/auth/callback` } });
   const r = mensajeDeRegistro(error);
   volver(r.mensaje, r.ok);
 }
