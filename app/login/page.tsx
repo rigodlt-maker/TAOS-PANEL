@@ -1,4 +1,5 @@
 import { esNube } from "@/lib/modo";
+import { CampoContrasena } from "../campo-contrasena";
 import { revisarLicencia } from "@/lib/licencia";
 
 export const dynamic = "force-dynamic";
@@ -38,8 +39,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
           </>
         )}
         <label htmlFor="clave">Contraseña</label>
-        <input id="clave" name="clave" type="password" autoComplete="current-password" autoFocus={!nube} required />
-        {error && <p className="error">{nube ? "Correo o contraseña incorrectos, intenta de nuevo." : "Contraseña incorrecta, intenta de nuevo."}</p>}
+        <CampoContrasena id="clave" name="clave" autoComplete="current-password" autoFocus={!nube} required />
+        {error && <p className="error">{nube ? "Correo o contraseña incorrectos. Si no la recuerdas, toca «¿Olvidaste tu contraseña?» aquí abajo." : "Contraseña incorrecta, intenta de nuevo."}</p>}
         {espera && <p className="error">Demasiados intentos. Por seguridad, espera {Number(espera) || 15} minutos y vuelve a intentar.</p>}
         <button type="submit">Entrar</button>
         {aviso && nube && <p className="error">{aviso.slice(0, 200)}</p>}
@@ -48,6 +49,11 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
           <p className="tenue" style={{ fontSize: 14, textAlign: "center", margin: 0 }}>
             ¿Primera vez? <a href="/crear-cuenta">Crea tu cuenta</a>
           </p>
+        )}
+        {nube && (
+          <a href="/olvide" style={{ minHeight: 44, display: "grid", placeItems: "center", fontSize: 15 }}>
+            ¿Olvidaste tu contraseña o no la recuerdas?
+          </a>
         )}
       </form>
     </main>

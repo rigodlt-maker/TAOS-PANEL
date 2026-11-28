@@ -14,6 +14,11 @@ export function MisDatos() {
         Descargar mis datos
       </a>
       {nube && (
+        <a className="boton" href="/nueva-contrasena" style={{ marginTop: 12, background: "transparent", border: "1px solid var(--borde)", color: "var(--texto)" }}>
+          🔑 Cambiar mi contraseña
+        </a>
+      )}
+      {nube && (
         <details style={{ marginTop: 16 }}>
           <summary style={{ minHeight: 44, display: "flex", alignItems: "center", cursor: "pointer", color: "#f87171" }}>Borrar mi cuenta</summary>
           <form action={borrarMiCuenta} style={{ display: "grid", gap: 8, marginTop: 8 }}>

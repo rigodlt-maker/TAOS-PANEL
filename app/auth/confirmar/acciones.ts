@@ -16,5 +16,6 @@ export async function confirmarEnlace(formulario: FormData) {
     const { data } = await db.auth.getClaims();
     if (!data?.claims) redirect(`/login?aviso=${encodeURIComponent(mensajeDeEnlace(error))}`);
   }
-  redirect("/");
+  // Si vino de «¿Olvidaste tu contraseña?», lo primero es crear la nueva
+  redirect(tipo === "recovery" ? "/nueva-contrasena" : "/");
 }

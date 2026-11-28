@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import Script from "next/script";
 import { esNube } from "@/lib/modo";
+import { CampoContrasena } from "../campo-contrasena";
 import { crearCuenta } from "./acciones";
 
 // Se arma en cada visita: depende de TAOS_MODO, que no debe quedar fijo desde el build
@@ -30,10 +31,11 @@ export default async function Registro({ searchParams }: { searchParams: Promise
           <p className="tenue" style={{ fontSize: 14, margin: 0 }}>Una sola cuenta para las 4 apps TAOS.</p>
           <label htmlFor="correo">Tu correo</label>
           <input id="correo" name="correo" type="email" autoComplete="email" required />
-          <label htmlFor="contrasena">Contraseña (mínimo 8 caracteres)</label>
-          <input id="contrasena" name="contrasena" type="password" minLength={8} maxLength={72} autoComplete="new-password" required />
+          <label htmlFor="contrasena">Crea tu contraseña TAOS (mínimo 8 caracteres)</label>
+          <span className="tenue" style={{ fontSize: 13, marginTop: -8 }}>Con ella entras a las 4 apps. Toca el ojito para ver lo que escribes.</span>
+          <CampoContrasena id="contrasena" name="contrasena" minLength={8} maxLength={72} autoComplete="new-password" required />
           <label htmlFor="confirmar">Escríbela otra vez</label>
-          <input id="confirmar" name="confirmar" type="password" minLength={8} maxLength={72} autoComplete="new-password" required />
+          <CampoContrasena id="confirmar" name="confirmar" minLength={8} maxLength={72} autoComplete="new-password" required />
           <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14 }}>
             <input type="checkbox" name="acepta" required style={{ width: 20, height: 20, minHeight: 0, marginTop: 2 }} />
             <span>
